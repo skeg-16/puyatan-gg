@@ -108,13 +108,14 @@ export default function Home() {
   }, [room]);
 
  /* ── SPONSORED MESSAGE TRIGGER (DITO MO ILALAGAY) ── */
+/* ── SPONSORED MESSAGE TRIGGER ── */
   useEffect(() => {
     // Lalabas ang ad kapag 5, 20, at 50 na ang total messages sa room
     if (messageCount === 5 || messageCount === 20 || messageCount === 50) {
       const adTexts = [
-        { text: "Lumalabo na ba paningin mo? Pampagising na kape here! ☕", link: "https://shopee.ph/search?keyword=coffee%203%20in%201" },
-        { text: "Nagdo-double click na ba mouse mo kaka-rank up? Upgrade na! 🖱️", link: "https://shopee.ph/search?keyword=gaming%20mouse" },
-        { text: "Pagod na likod mo kakaupo. Baka bet mo ng ergonomic chair. 💺", link: "https://shopee.ph/search?keyword=ergonomic%20chair" }
+        { text: "Lumalabo na ba paningin mo? Pampagising na kape here! ☕", link: "https://www.profitablecpmratenetwork.com/wj5k3704g?key=a1e8c914d826c6b3834b15aa0bbba67e" },
+        { text: "Nagdo-double click na ba mouse mo kaka-rank up? Upgrade na! 🖱️", link: "https://www.profitablecpmratenetwork.com/wj5k3704g?key=a1e8c914d826c6b3834b15aa0bbba67e" },
+        { text: "Pagod na likod mo kakaupo. Baka bet mo ng ergonomic chair. 💺", link: "https://www.profitablecpmratenetwork.com/wj5k3704g?key=a1e8c914d826c6b3834b15aa0bbba67e" }
       ];
       const randomAd = adTexts[Math.floor(Math.random() * adTexts.length)];
       
@@ -650,19 +651,41 @@ const handleStart = () => {
         </div>
 
         {/* ── AD SIDEBAR (Hybrid Monetization Zone) ── */}
-        <div style={{ width: "220px", borderLeft: `1px solid ${D.sidebarBdr}`, background: D.sidebarBg, display: "flex", flexDirection: "column", alignItems: "center", padding: "20px 16px", gap: "20px", overflowY: "auto" }} className="sidebar-ad no-scrollbar">
+        <div style={{ width: "220px", borderLeft: `1px solid ${D.sidebarBdr}`, background: D.sidebarBg, display: "flex", flexDirection: "column", alignItems: "center", padding: "20px 16px", gap: "16px", overflowY: "auto" }} className="sidebar-ad no-scrollbar">
           
           <span style={{ fontSize: "9px", fontWeight: 900, letterSpacing: "0.22em", textTransform: "uppercase", color: D.textMut }}>Sponsored</span>
 
-          {/* Affiliate Link Placeholder (Shopee) */}
-          <div style={{ width: "100%", background: D.panelBg, borderRadius: "14px", border: `1px solid ${D.panelBdr}`, padding: "16px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", boxShadow: D.panelShadow }} onMouseEnter={e => { e.currentTarget.style.borderColor = "#F97316"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = D.panelBdr; e.currentTarget.style.transform = "translateY(0)"; }}>
-            <div style={{ fontSize: "2.5rem", marginBottom: "10px" }}>☕</div>
-            <p style={{ fontSize: "12px", fontWeight: 800, color: D.textPri, margin: "0 0 4px 0" }}>Pampagising Kape</p>
-            <p style={{ fontSize: "10px", color: D.textMut, margin: "0 0 12px 0", lineHeight: 1.4 }}>Para sa madaling araw na debugging.</p>
-            <button style={{ width: "100%", padding: "8px 0", background: "linear-gradient(135deg, #F97316, #EA580C)", color: "#fff", border: "none", borderRadius: "8px", fontSize: "11px", fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 12px rgba(249,115,22,0.3)" }}>
-              BUY ON SHOPEE
-            </button>
+          {/* 1. OTTER DIGITALS PROMO */}
+          <div style={{ width: "100%", background: D.panelBg, borderRadius: "14px", border: `1px solid ${D.panelBdr}`, padding: "16px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", boxShadow: D.panelShadow }} onMouseEnter={e => { e.currentTarget.style.borderColor = "#3B82F6"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = D.panelBdr; e.currentTarget.style.transform = "translateY(0)"; }}>
+            <div style={{ fontSize: "2.5rem", marginBottom: "8px" }}>🦦</div>
+            <p style={{ fontSize: "12px", fontWeight: 800, color: D.textPri, margin: "0 0 4px 0" }}>Otter Digitals</p>
+            <p style={{ fontSize: "9px", color: D.textMut, margin: "0 0 12px 0", lineHeight: 1.4 }}>Need a website or custom system? Let's build it.</p>
+            <a href="#" target="_blank" rel="noopener noreferrer" style={{ display: "block", width: "100%", padding: "8px 0", background: "linear-gradient(135deg, #3B82F6, #2563EB)", color: "#fff", border: "none", borderRadius: "8px", fontSize: "11px", fontWeight: 800, textDecoration: "none", boxShadow: "0 4px 12px rgba(59,130,246,0.3)" }}>
+              HIRE US
+            </a>
           </div>
+
+          {/* 2. AFFILIATE / ADSTERRA DIRECT LINK */}
+          <div style={{ width: "100%", background: D.panelBg, borderRadius: "14px", border: `1px solid ${D.panelBdr}`, padding: "16px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", boxShadow: D.panelShadow }} onMouseEnter={e => { e.currentTarget.style.borderColor = "#F97316"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = D.panelBdr; e.currentTarget.style.transform = "translateY(0)"; }}>
+            <div style={{ fontSize: "2.5rem", marginBottom: "8px" }}>☕</div>
+            <p style={{ fontSize: "12px", fontWeight: 800, color: D.textPri, margin: "0 0 4px 0" }}>Pampagising Kape</p>
+            <p style={{ fontSize: "9px", color: D.textMut, margin: "0 0 12px 0", lineHeight: 1.4 }}>Para sa madaling araw na puyatan.</p>
+            <a href="https://www.profitablecpmratenetwork.com/wj5k3704g?key=a1e8c914d826c6b3834b15aa0bbba67e" target="_blank" rel="noopener noreferrer" style={{ display: "block", width: "100%", padding: "8px 0", background: "linear-gradient(135deg, #F97316, #EA580C)", color: "#fff", border: "none", borderRadius: "8px", fontSize: "11px", fontWeight: 800, textDecoration: "none", boxShadow: "0 4px 12px rgba(249,115,22,0.3)" }}>
+              BUY ON SHOPEE
+            </a>
+          </div>
+
+          {/* 3. MERCH / ADSTERRA DIRECT LINK */}
+          <div style={{ width: "100%", background: D.panelBg, borderRadius: "14px", border: `1px solid ${D.panelBdr}`, padding: "16px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", boxShadow: D.panelShadow }} onMouseEnter={e => { e.currentTarget.style.borderColor = D.accent; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = D.panelBdr; e.currentTarget.style.transform = "translateY(0)"; }}>
+            <div style={{ fontSize: "2.5rem", marginBottom: "8px" }}>🛍️</div>
+            <p style={{ fontSize: "12px", fontWeight: 800, color: D.textPri, margin: "0 0 4px 0" }}>Limited Edition Tote</p>
+            <p style={{ fontSize: "14px", fontWeight: 900, color: D.accent, margin: "0 0 12px 0" }}>₱175</p>
+            <a href="https://www.profitablecpmratenetwork.com/wj5k3704g?key=a1e8c914d826c6b3834b15aa0bbba67e" target="_blank" rel="noopener noreferrer" style={{ display: "block", width: "100%", padding: "8px 0", background: D.accentGrad, color: "#fff", border: "none", borderRadius: "8px", fontSize: "11px", fontWeight: 800, textDecoration: "none", boxShadow: D.btnShadow }}>
+              GET YOURS
+            </a>
+          </div>
+
+        </div>
 
           {/* Own Merch Placeholder */}
           <div style={{ width: "100%", background: D.panelBg, borderRadius: "14px", border: `1px solid ${D.panelBdr}`, padding: "16px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", boxShadow: D.panelShadow }} onMouseEnter={e => { e.currentTarget.style.borderColor = D.accent; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = D.panelBdr; e.currentTarget.style.transform = "translateY(0)"; }}>
