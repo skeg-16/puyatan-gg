@@ -70,6 +70,38 @@ const icebreakers = [
   "Kung may 1M pesos ka bukas, ano unang bibilhin mo?",
   "Kwento mo yung pinaka-sabaw moment mo today.",
 ];
+/* ── ADBANNER COMPONENT (ADSTERRA) ── */
+const AdBanner = () => {
+  const bannerRef = useRef(null);
+
+/* ── ADBANNER COMPONENT (ADSTERRA) ── */
+const AdBanner = () => {
+  const bannerRef = useRef(null);
+
+  useEffect(() => {
+    // Check natin kung wala pang laman yung div para hindi mag-doble-doble ang ads
+    if (bannerRef.current && !bannerRef.current.hasChildNodes()) {
+      const conf = document.createElement('script');
+      conf.type = 'text/javascript';
+      conf.innerHTML = `atOptions = {
+        'key' : 'b0ac9338a38cb7f265d44e19d30617da',
+        'format' : 'iframe',
+        'height' : 90,
+        'width' : 728,
+        'params' : {}
+      };`;
+      
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = 'https://www.highperformanceformat.com/b0ac9338a38cb7f265d44e19d30617da/invoke.js';
+      
+      bannerRef.current.appendChild(conf);
+      bannerRef.current.appendChild(script);
+    }
+  }, []);
+
+  return <div ref={bannerRef} style={{ width: "728px", height: "90px" }} />;
+};
 
 /* ─────────────────────────────────────────────────────────── */
 export default function Home() {
@@ -91,6 +123,8 @@ export default function Home() {
   const [floatingEmojis,setFloatingEmojis]= useState([]);
   const [isSpoilerMode, setIsSpoilerMode] = useState(false);
   const [messageCount,  setMessageCount]  = useState(0);
+
+  // ... (tuloy-tuloy na yung ibang variables at logic mo sa baba)
 
   const chatEndRef       = useRef(null);
   const typingTimeoutRef = useRef(null);
@@ -660,7 +694,7 @@ const handleStart = () => {
             <div style={{ fontSize: "2.5rem", marginBottom: "8px" }}>🦦</div>
             <p style={{ fontSize: "12px", fontWeight: 800, color: D.textPri, margin: "0 0 4px 0" }}>Otter Digitals</p>
             <p style={{ fontSize: "9px", color: D.textMut, margin: "0 0 12px 0", lineHeight: 1.4 }}>Need a website or custom system? Let's build it.</p>
-            <a href="#" target="_blank" rel="noopener noreferrer" style={{ display: "block", width: "100%", padding: "8px 0", background: "linear-gradient(135deg, #3B82F6, #2563EB)", color: "#fff", border: "none", borderRadius: "8px", fontSize: "11px", fontWeight: 800, textDecoration: "none", boxShadow: "0 4px 12px rgba(59,130,246,0.3)" }}>
+            <a href="https://otter-digitals.vercel.app/" target="_blank" rel="noopener noreferrer" style={{ display: "block", width: "100%", padding: "8px 0", background: "linear-gradient(135deg, #3B82F6, #2563EB)", color: "#fff", border: "none", borderRadius: "8px", fontSize: "11px", fontWeight: 800, textDecoration: "none", boxShadow: "0 4px 12px rgba(59,130,246,0.3)" }}>
               HIRE US
             </a>
           </div>
