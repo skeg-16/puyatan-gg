@@ -107,6 +107,25 @@ export default function Home() {
     return () => { window.removeEventListener("blur", onBlur); window.removeEventListener("focus", onFocus); };
   }, [room]);
 
+ /* ── SPONSORED MESSAGE TRIGGER (DITO MO ILALAGAY) ── */
+  useEffect(() => {
+    // Lalabas ang ad kapag 5, 20, at 50 na ang total messages sa room
+    if (messageCount === 5 || messageCount === 20 || messageCount === 50) {
+      const adTexts = [
+        { text: "Lumalabo na ba paningin mo? Pampagising na kape here! ☕", link: "https://shopee.ph/search?keyword=coffee%203%20in%201" },
+        { text: "Nagdo-double click na ba mouse mo kaka-rank up? Upgrade na! 🖱️", link: "https://shopee.ph/search?keyword=gaming%20mouse" },
+        { text: "Pagod na likod mo kakaupo. Baka bet mo ng ergonomic chair. 💺", link: "https://shopee.ph/search?keyword=ergonomic%20chair" }
+      ];
+      const randomAd = adTexts[Math.floor(Math.random() * adTexts.length)];
+      
+      // Delay ng 1.5 seconds bago lumabas para natural ang pasok
+      setTimeout(() => {
+        setChatBox(p => [...p, { text: randomAd.text, link: randomAd.link, type: "sponsor" }]);
+      }, 1500);
+    }
+  }, [messageCount]);
+
+
   /* ── auto-scroll ── */
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chatBox]);
 
@@ -136,7 +155,6 @@ export default function Home() {
         .forEach(e => socket.off(e));
     };
   }, []);
-
   const triggerFloatingEmoji = (emoji) => {
     const id = Date.now() + Math.random();
     setFloatingEmojis(p => [...p, { id, emoji }]);
@@ -295,9 +313,9 @@ const handleStart = () => {
         <div key={e.id} style={{ position: "fixed", bottom: "130px", right: "60px", fontSize: "3rem", pointerEvents: "none", zIndex: 50, animation: "floatUp 2.2s ease-out forwards" }}>{e.emoji}</div>
       ))}
 
-      {/* ── TOP AD BANNER ── */}
-      <div style={{ width: "100%", maxWidth: "920px", height: "52px", marginBottom: "10px", borderRadius: "14px", border: `1px dashed ${isDark ? "rgba(255,255,255,0.07)" : "rgba(14,165,233,0.18)"}`, display: "none", alignItems: "center", justifyContent: "center", zIndex: 10, fontSize: "9px", fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: D.textMut }} className="banner-ad">
-        Adsterra Banner
+      {/* ── TOP AD BANNER (Google AdSense Placeholder) ── */}
+      <div style={{ width: "100%", maxWidth: "920px", height: "90px", marginBottom: "10px", borderRadius: "14px", border: `1px dashed ${isDark ? "rgba(255,255,255,0.15)" : "rgba(14,165,233,0.25)"}`, display: "none", alignItems: "center", justifyContent: "center", zIndex: 10, fontSize: "10px", fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: D.textMut, background: isDark ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.4)" }} className="banner-ad">
+        [ Google AdSense Space - 728x90 ]
       </div>
 
       <div
@@ -631,12 +649,31 @@ const handleStart = () => {
           )}
         </div>
 
-        {/* ── AD SIDEBAR ── */}
-        <div style={{ width: "200px", borderLeft: `1px solid ${D.sidebarBdr}`, background: D.sidebarBg, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "16px" }} className="sidebar-ad">
-          <div style={{ width: "100%", flex: 1, border: `2px dashed ${isDark ? "rgba(255,255,255,0.07)" : "rgba(14,165,233,0.15)"}`, borderRadius: "16px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-            <span style={{ fontSize: "1.8rem", opacity: 0.18 }}>📢</span>
-            <span style={{ fontSize: "7px", fontWeight: 900, letterSpacing: "0.22em", textTransform: "uppercase", color: D.accent, opacity: 0.25 }}>Adsterra</span>
+        {/* ── AD SIDEBAR (Hybrid Monetization Zone) ── */}
+        <div style={{ width: "220px", borderLeft: `1px solid ${D.sidebarBdr}`, background: D.sidebarBg, display: "flex", flexDirection: "column", alignItems: "center", padding: "20px 16px", gap: "20px", overflowY: "auto" }} className="sidebar-ad no-scrollbar">
+          
+          <span style={{ fontSize: "9px", fontWeight: 900, letterSpacing: "0.22em", textTransform: "uppercase", color: D.textMut }}>Sponsored</span>
+
+          {/* Affiliate Link Placeholder (Shopee) */}
+          <div style={{ width: "100%", background: D.panelBg, borderRadius: "14px", border: `1px solid ${D.panelBdr}`, padding: "16px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", boxShadow: D.panelShadow }} onMouseEnter={e => { e.currentTarget.style.borderColor = "#F97316"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = D.panelBdr; e.currentTarget.style.transform = "translateY(0)"; }}>
+            <div style={{ fontSize: "2.5rem", marginBottom: "10px" }}>☕</div>
+            <p style={{ fontSize: "12px", fontWeight: 800, color: D.textPri, margin: "0 0 4px 0" }}>Pampagising Kape</p>
+            <p style={{ fontSize: "10px", color: D.textMut, margin: "0 0 12px 0", lineHeight: 1.4 }}>Para sa madaling araw na debugging.</p>
+            <button style={{ width: "100%", padding: "8px 0", background: "linear-gradient(135deg, #F97316, #EA580C)", color: "#fff", border: "none", borderRadius: "8px", fontSize: "11px", fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 12px rgba(249,115,22,0.3)" }}>
+              BUY ON SHOPEE
+            </button>
           </div>
+
+          {/* Own Merch Placeholder */}
+          <div style={{ width: "100%", background: D.panelBg, borderRadius: "14px", border: `1px solid ${D.panelBdr}`, padding: "16px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", boxShadow: D.panelShadow }} onMouseEnter={e => { e.currentTarget.style.borderColor = D.accent; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = D.panelBdr; e.currentTarget.style.transform = "translateY(0)"; }}>
+            <div style={{ fontSize: "2.5rem", marginBottom: "10px" }}>🛍️</div>
+            <p style={{ fontSize: "12px", fontWeight: 800, color: D.textPri, margin: "0 0 4px 0" }}>Limited Edition Tote Bag</p>
+            <p style={{ fontSize: "14px", fontWeight: 900, color: D.accent, margin: "0 0 12px 0" }}>₱175</p>
+            <button style={{ width: "100%", padding: "8px 0", background: D.accentGrad, color: "#fff", border: "none", borderRadius: "8px", fontSize: "11px", fontWeight: 800, cursor: "pointer", boxShadow: D.btnShadow }}>
+              GET YOURS
+            </button>
+          </div>
+
         </div>
       </div>
 
