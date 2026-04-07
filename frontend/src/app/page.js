@@ -650,7 +650,7 @@ const handleStart = () => {
           )}
         </div>
 
-        {/* ── AD SIDEBAR (Hybrid Monetization Zone) ── */}
+{/* ── AD SIDEBAR (Hybrid Monetization Zone) ── */}
         <div style={{ width: "220px", borderLeft: `1px solid ${D.sidebarBdr}`, background: D.sidebarBg, display: "flex", flexDirection: "column", alignItems: "center", padding: "20px 16px", gap: "16px", overflowY: "auto" }} className="sidebar-ad no-scrollbar">
           
           <span style={{ fontSize: "9px", fontWeight: 900, letterSpacing: "0.22em", textTransform: "uppercase", color: D.textMut }}>Sponsored</span>
@@ -685,17 +685,6 @@ const handleStart = () => {
             </a>
           </div>
 
-        </div>
-
-          {/* Own Merch Placeholder */}
-          <div style={{ width: "100%", background: D.panelBg, borderRadius: "14px", border: `1px solid ${D.panelBdr}`, padding: "16px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", boxShadow: D.panelShadow }} onMouseEnter={e => { e.currentTarget.style.borderColor = D.accent; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = D.panelBdr; e.currentTarget.style.transform = "translateY(0)"; }}>
-            <div style={{ fontSize: "2.5rem", marginBottom: "10px" }}>🛍️</div>
-            <p style={{ fontSize: "12px", fontWeight: 800, color: D.textPri, margin: "0 0 4px 0" }}>Limited Edition Tote Bag</p>
-            <p style={{ fontSize: "14px", fontWeight: 900, color: D.accent, margin: "0 0 12px 0" }}>₱175</p>
-            <button style={{ width: "100%", padding: "8px 0", background: D.accentGrad, color: "#fff", border: "none", borderRadius: "8px", fontSize: "11px", fontWeight: 800, cursor: "pointer", boxShadow: D.btnShadow }}>
-              GET YOURS
-            </button>
-          </div>
         </div>
       </div>
 
