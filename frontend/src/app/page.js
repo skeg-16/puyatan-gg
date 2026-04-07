@@ -696,7 +696,6 @@ const handleStart = () => {
               GET YOURS
             </button>
           </div>
-
         </div>
       </div>
 
