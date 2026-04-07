@@ -70,9 +70,6 @@ const icebreakers = [
   "Kung may 1M pesos ka bukas, ano unang bibilhin mo?",
   "Kwento mo yung pinaka-sabaw moment mo today.",
 ];
-/* ── ADBANNER COMPONENT (ADSTERRA) ── */
-const AdBanner = () => {
-  const bannerRef = useRef(null);
 
 /* ── ADBANNER COMPONENT (ADSTERRA) ── */
 const AdBanner = () => {
