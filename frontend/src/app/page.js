@@ -308,10 +308,29 @@ const handleStart = () => {
   const handleTyping = (e) => { setMessage(e.target.value); if (room) socket.emit("typing", { room }); };
   const sendIcebreaker = () => setMessage(icebreakers[Math.floor(Math.random() * icebreakers.length)]);
 
-  const reportUser = () => {
-    if (!room) return;
+const reportUser = async () => {
+    if (!room || !strangerInfo) return;
+
+    // 1. I-save agad sa Supabase Database
+    const { error } = await supabase.from('reports').insert([
+      {
+        reported_user: strangerInfo.nickname || "Unknown Stranger",
+        reporter: nickname,
+        reason: "Inappropriate behavior (Reported via UI)",
+        room_id: room,
+        status: "Pending"
+      }
+    ]);
+
+    if (error) {
+      setServerNotice("May error sa pag-send ng report. Try again.");
+      console.error(error);
+      return;
+    }
+
+    // 2. I-disconnect sa chat at ilipat sa rating screen
     socket.emit("report_user", { room, reason: "Reported from chat UI." });
-    setServerNotice("Naka-submit na ang report.");
+    setServerNotice("Naka-submit na ang report. Salamat boss!");
     setStatus("rating");
     setRoom(null);
   };
@@ -459,10 +478,10 @@ return (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px", width: "100%" }}>
                 
                 {/* Otter Digitals */}
-                <a href="#" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", background: isDark ? "rgba(59,130,246,0.1)" : "rgba(59,130,246,0.05)", border: `1px solid ${isDark ? "rgba(59,130,246,0.3)" : "rgba(59,130,246,0.2)"}`, borderRadius: "12px", padding: "14px", textAlign: "center", transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.transform = "translateY(-3px)"} onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>
+                <a href="https://otter-digitals.vercel.app/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", background: isDark ? "rgba(59,130,246,0.1)" : "rgba(59,130,246,0.05)", border: `1px solid ${isDark ? "rgba(59,130,246,0.3)" : "rgba(59,130,246,0.2)"}`, borderRadius: "12px", padding: "14px", textAlign: "center", transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.transform = "translateY(-3px)"} onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>
                   <div style={{ fontSize: "2.5rem", marginBottom: "6px" }}>🦦</div>
                   <p style={{ fontSize: "12px", fontWeight: 800, color: D.textPri, margin: "0 0 4px 0" }}>Otter Digitals</p>
-                  <p style={{ fontSize: "9px", color: D.textMut, margin: 0 }}>Websites & Systems</p>
+                  <p style={{ fontSize: "9px", color: D.textMut, margin: 0 }}>Digital Toolkit</p>
                 </a>
 
                 {/* Pampagising Kape */}
@@ -854,7 +873,7 @@ return (
           <div style={{ width: "100%", background: D.panelBg, borderRadius: "14px", border: `1px solid ${D.panelBdr}`, padding: "16px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", boxShadow: D.panelShadow }} onMouseEnter={e => { e.currentTarget.style.borderColor = "#3B82F6"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = D.panelBdr; e.currentTarget.style.transform = "translateY(0)"; }}>
             <div style={{ fontSize: "2.5rem", marginBottom: "8px" }}>🦦</div>
             <p style={{ fontSize: "12px", fontWeight: 800, color: D.textPri, margin: "0 0 4px 0" }}>Otter Digitals</p>
-            <p style={{ fontSize: "9px", color: D.textMut, margin: "0 0 12px 0", lineHeight: 1.4 }}>Need a website or custom system? Let's build it.</p>
+            <p style={{ fontSize: "9px", color: D.textMut, margin: "0 0 12px 0", lineHeight: 1.4 }}>30 plus digital tools for seamless conversions.</p>
             <a href="https://otter-digitals.vercel.app/" target="_blank" rel="noopener noreferrer" style={{ display: "block", width: "100%", padding: "8px 0", background: "linear-gradient(135deg, #3B82F6, #2563EB)", color: "#fff", border: "none", borderRadius: "8px", fontSize: "11px", fontWeight: 800, textDecoration: "none", boxShadow: "0 4px 12px rgba(59,130,246,0.3)" }}>
               HIRE US
             </a>
