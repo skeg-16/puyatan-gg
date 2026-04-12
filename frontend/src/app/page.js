@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 import * as htmlToImage from 'html-to-image';
+import { supabase } from "@/lib/supabase";
 
 const socket = io(process.env.NEXT_PUBLIC_BACKEND_URL);
 const badWords = ["bobo","tanga","gago","puta","amputa","shit","fuck","inamo","nudes","kantot","jakol","titi","puke"];
