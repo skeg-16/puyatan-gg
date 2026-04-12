@@ -443,21 +443,22 @@ return (
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "2px" }}>
                     <h1
-                      style={{
-                        margin: 0,
-                        fontFamily: "'Bebas Neue',sans-serif",
-                        fontSize: "clamp(2.15rem, 4.8vw, 3.35rem)",
-                        letterSpacing: "0.1em",
-                        lineHeight: 0.96,
-                        background: D.logoGrad,
-                        WebkitBackgroundClip: "text",
-                        backgroundClip: "text",
-                        color: "transparent",
-                        textShadow: isDark ? "0 0 24px rgba(167,139,250,0.18)" : "0 0 18px rgba(2,132,199,0.12)",
-                      }}
-                    >
-                      PUYATAN.GG
-                    </h1>
+                            style={{
+                              margin: 0,
+                              fontFamily: "'Bebas Neue', sans-serif",
+                              fontSize: "clamp(2.15rem, 4.8vw, 3.35rem)",
+                              letterSpacing: "0.1em",
+                              lineHeight: 0.96,
+                              background: D.logoGrad,
+                              WebkitBackgroundClip: "text",
+                              backgroundClip: "text",
+                              color: "transparent",
+                              WebkitTextFillColor: "transparent",
+                              textShadow: isDark ? "0 0 24px rgba(167,139,250,0.18)" : "0 0 18px rgba(2,132,199,0.12)",
+                            }}
+                          >
+                            PUYATAN.GG
+                          </h1>
                     <span style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "3px 9px", borderRadius: "999px", fontSize: "9px", fontWeight: 800, letterSpacing: "0.1em", background: isDark ? "rgba(34,197,94,0.1)" : "rgba(22,163,74,0.1)", border: `1px solid ${isDark ? "rgba(34,197,94,0.3)" : "rgba(22,163,74,0.25)"}`, color: isDark ? "#4ADE80" : "#16A34A" }}>
                       <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: isDark ? "#4ADE80" : "#16A34A", animation: "pulse 1.4s infinite" }} /> LIVE
                     </span>
