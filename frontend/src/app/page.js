@@ -425,13 +425,19 @@ return (
       )}
 
       <div
-        style={{ width: "100%", maxWidth: "920px", borderRadius: "28px", background: D.cardBg, backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)", border: `1px solid ${D.cardBdr}`, boxShadow: D.cardShadow, display: "flex", flexDirection: "row", height: "min(88vh, 720px)", zIndex: 10, overflow: "hidden", transition: "all 0.6s" }}
+        style={{ width: "100%", maxWidth: "920px", borderRadius: "28px",
+        background: D.cardBg, backdropFilter: "blur(28px)", WebkitBackdropFilter:
+        "blur(28px)", border: `1px solid ${D.cardBdr}`, boxShadow: D.cardShadow, display:
+        "flex", flexDirection: "row", flex: 1, minHeight: 0, maxHeight: "760px", zIndex: 10, overflow:
+        "hidden", transition: "all 0.6s" }}
       >
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
-          {/* ════════════════════ STATE: LANDING ════════════════════ */}
-          {status === "landing" && (
-            <div style={{ flex: 1, overflowY: "auto", padding: "22px 24px", display: "flex", flexDirection: "column", gap: "14px" }} className="no-scrollbar">
+          {/* ── STATE: LANDING ── */}
+        {status === "landing" && (
+          <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px",
+          display: "flex", flexDirection: "column", gap: "12px", minHeight: 0 }}
+          className="chat-scroll">
 
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                 <div>
@@ -774,7 +780,10 @@ return (
         </div>
 
 {/* ── AD SIDEBAR (Hybrid Monetization Zone) ── */}
-        <div style={{ width: "220px", borderLeft: `1px solid ${D.sidebarBdr}`, background: D.sidebarBg, display: "flex", flexDirection: "column", alignItems: "center", padding: "20px 16px", gap: "16px", overflowY: "auto" }} className="sidebar-ad no-scrollbar">
+        <div style={{ width: "220px", flexShrink: 0, borderLeft: `1px solid ${D.sidebarBdr}`,
+        background: D.sidebarBg, display: "flex", flexDirection: "column", alignItems:
+        "center", padding: "20px 16px", gap: "16px", overflowY: "auto" }}
+        className="sidebar-ad chat-scroll">
           
           <span style={{ fontSize: "9px", fontWeight: 900, letterSpacing: "0.22em", textTransform: "uppercase", color: D.textMut }}>Sponsored</span>
 
