@@ -442,18 +442,17 @@ return (
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "2px" }}>
-                    <h1
+                 <h1
                             style={{
                               margin: 0,
                               fontFamily: "'Bebas Neue', sans-serif",
                               fontSize: "clamp(2.15rem, 4.8vw, 3.35rem)",
                               letterSpacing: "0.1em",
                               lineHeight: 0.96,
-                              background: D.logoGrad,
+                              backgroundImage: D.logoGrad, /* Pinalitan natin ng backgroundImage */
                               WebkitBackgroundClip: "text",
                               backgroundClip: "text",
                               color: "transparent",
-                              WebkitTextFillColor: "transparent",
                               textShadow: isDark ? "0 0 24px rgba(167,139,250,0.18)" : "0 0 18px rgba(2,132,199,0.12)",
                             }}
                           >
