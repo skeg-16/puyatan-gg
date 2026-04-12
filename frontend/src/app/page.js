@@ -386,9 +386,9 @@ const handleStart = () => {
   const lbl = { fontSize: "9px", fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", color: D.labelClr, display: "block", marginBottom: "10px" };
   const iconBtn = { background: D.iconBtnBg, border: `1px solid ${D.iconBtnBdr}`, color: D.iconBtnClr, borderRadius: "12px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" };
 
-  return (
+return (
     <div
-      style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "8px", position: "relative", overflow: "hidden", background: D.pageBg, fontFamily: "'Figtree', sans-serif", transition: "background 0.6s" }}
+      style={{ height: "100dvh", width: "100vw", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "8px", position: "relative", overflow: "hidden", background: D.pageBg, fontFamily: "'Figtree', sans-serif", transition: "background 0.6s", boxSizing: "border-box" }}
     >
       {/* ── AURORA BACKGROUND BLOBS ── */}
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0 }}>
