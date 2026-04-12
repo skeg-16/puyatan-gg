@@ -434,11 +434,11 @@ return (
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 {/* ── STATE: INTRO (THE NEW FRONT PAGE) ── */}
         {status === "intro" && (
-          <div style={{ flex: 1, overflowY: "auto", padding: "30px 24px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "24px", minHeight: 0, animation: "fadeSlideUp 0.5s ease-out", width: "100%" }} className="chat-scroll">
+          <div style={{ flex: 1, overflowY: "auto", padding: "40px 24px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", gap: "24px", minHeight: 0, animation: "fadeSlideUp 0.5s ease-out", width: "100%" }} className="chat-scroll">
             
             {/* Header & Description */}
-            <div style={{ textAlign: "center", marginTop: "20px" }}>
-              <h1 style={{ margin: 0, fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(3.5rem, 8vw, 5rem)", letterSpacing: "0.1em", lineHeight: 0.96, backgroundImage: D.logoGrad, WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", animation: "pulse 3s infinite" }}>
+            <div style={{ textAlign: "center", marginTop: "10px" }}>
+              <h1 style={{ margin: 0, fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(2.5rem, 10vw, 5rem)", letterSpacing: "0.1em", lineHeight: 0.96, backgroundImage: D.logoGrad, WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", animation: "pulse 3s infinite" }}>
                 PUYATAN.GG
               </h1>
               <p style={{ margin: "12px auto 0", fontSize: "14px", fontWeight: 600, color: D.textMut, letterSpacing: "0.05em", maxWidth: "420px", lineHeight: 1.5 }}>
