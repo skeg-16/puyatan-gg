@@ -1,10 +1,12 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 import * as htmlToImage from 'html-to-image';
 
 const socket = io(process.env.NEXT_PUBLIC_BACKEND_URL);
 const badWords = ["bobo","tanga","gago","puta","amputa","shit","fuck","inamo","nudes","kantot","jakol","titi","puke"];
+const THEME_STORAGE_KEY = "puyatan-theme";
 
 // 1. EXPANDED UNIVERSITIES (Dropdown Data)
 const universities = [
@@ -104,6 +106,8 @@ const AdBanner = () => {
 export default function Home() {
   const [theme,       setTheme]       = useState("dark");
   const [status,      setStatus]      = useState("landing");
+  const [connectionState, setConnectionState] = useState("connecting");
+  const [serverNotice, setServerNotice] = useState("");
   const [nickname,    setNickname]    = useState("");
   const [nickError,   setNickError]   = useState("");
   const [selectedUniv,setSelectedUniv]= useState("NONE");
@@ -126,8 +130,20 @@ export default function Home() {
   const chatEndRef       = useRef(null);
   const typingTimeoutRef = useRef(null);
   const chatContainerRef = useRef(null);
+  const sponsorTimeoutRef = useRef(null);
 
   const isDark = theme === "dark";
+
+  useEffect(() => {
+    const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+    if (savedTheme === "dark" || savedTheme === "light") {
+      setTheme(savedTheme);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
 
   /* ── window blur / focus AFK ── */
   useEffect(() => {
@@ -151,10 +167,12 @@ export default function Home() {
       const randomAd = adTexts[Math.floor(Math.random() * adTexts.length)];
       
       // Delay ng 1.5 seconds bago lumabas para natural ang pasok
-      setTimeout(() => {
+      clearTimeout(sponsorTimeoutRef.current);
+      sponsorTimeoutRef.current = setTimeout(() => {
         setChatBox(p => [...p, { text: randomAd.text, link: randomAd.link, type: "sponsor" }]);
       }, 1500);
     }
+    return () => clearTimeout(sponsorTimeoutRef.current);
   }, [messageCount]);
 
 
@@ -163,9 +181,37 @@ export default function Home() {
 
   /* ── socket events ── */
   useEffect(() => {
+    const onConnect = () => {
+      setConnectionState("connected");
+      setServerNotice("");
+    };
+    const onDisconnect = (reason) => {
+      setConnectionState("disconnected");
+      if (reason !== "io client disconnect") {
+        setServerNotice("Connection interrupted. Trying to recover...");
+      }
+    };
+    const onConnectError = () => {
+      setConnectionState("error");
+      setServerNotice("Hindi ma-reach ang chat server ngayon.");
+    };
+    const onAppError = (payload) => {
+      const message = payload?.message || "May error sa server.";
+      setNickError(message);
+      setServerNotice(message);
+    };
+    const onReportSubmitted = () => setServerNotice("Report submitted. Salamat sa pag-ingat sa community.");
+    const onQueueLeft = () => setServerNotice("");
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    socket.on("connect_error", onConnectError);
+    socket.on("app_error", onAppError);
+    socket.on("report_submitted", onReportSubmitted);
+    socket.on("queue_left", onQueueLeft);
     socket.on("waiting_for_match",   () => setStatus("searching"));
     socket.on("match_found",         (d) => {
-      setStatus("connected"); setRoom(d.room); setStrangerAfk(false); setMessageCount(0);
+      setStatus("connected"); setRoom(d.room); setStrangerAfk(false); setMessageCount(0); setServerNotice("");
       setChatBox([{ text: "Nakahanap ka na ng ka-puyatan. Wag torpe, mag-hi ka na!", type: "system" }]);
     });
     socket.on("stranger_info",       (i)  => setStrangerInfo(i));
@@ -179,10 +225,11 @@ export default function Home() {
     });
     socket.on("stranger_afk",        (v)  => setStrangerAfk(v));
     socket.on("receive_reaction",    (d)  => triggerFloatingEmoji(d.emoji));
-    socket.on("stranger_disconnected",()  => { setIsTyping(false); setStrangerAfk(false); setStatus("rating"); });
+    socket.on("stranger_disconnected",()  => { setIsTyping(false); setStrangerAfk(false); setStatus("rating"); setRoom(null); });
     
     return () => {
-      ["waiting_for_match","match_found","stranger_info","receive_message",
+      ["connect","disconnect","connect_error","app_error","report_submitted","queue_left",
+       "waiting_for_match","match_found","stranger_info","receive_message",
        "stranger_typing","stranger_afk","receive_reaction","stranger_disconnected"]
         .forEach(e => socket.off(e));
     };
@@ -210,25 +257,37 @@ export default function Home() {
   };
 
 const handleStart = () => {
+    if (!process.env.NEXT_PUBLIC_BACKEND_URL) return setNickError("Walang backend URL sa env mo.");
+    if (connectionState === "error") return setNickError("Hindi ma-reach ang chat server ngayon.");
     if (!nickname.trim()) return setNickError("Lagyan mo naman ng pangalan idol.");
     if (badWords.some(w => nickname.toLowerCase().includes(w))) return setNickError("Bawal ang bastos na pangalan dito. Iba na lang.");
     if (!agreed) return setNickError("I-check mo muna yung terms sa baba.");
     
     setNickError(""); 
+    setServerNotice("");
     setChatBox([]);
     setStatus("searching"); // ETO YUNG NAWAWALA KANINA!
     socket.emit("find_match", { nickname, univ: selectedUniv, mood: selectedMood, tags: selectedTags });
   };
   
-  const skipChat = () => { socket.disconnect(); socket.connect(); setStatus("rating"); };
+  const skipChat = () => {
+    socket.disconnect();
+    socket.connect();
+    setStatus("rating");
+    setRoom(null);
+  };
 
   const exitToMenu = () => {
-    socket.disconnect(); 
-    socket.connect(); 
+    if (status === "searching") socket.emit("leave_queue");
+    if (status === "connected") {
+      socket.disconnect();
+      socket.connect();
+    }
     setStatus("landing"); 
     setRoom(null); 
     setStrangerInfo(null); 
     setChatBox([]);
+    setServerNotice("");
   };
 
   const submitRating = (rating) => {
@@ -239,14 +298,23 @@ const handleStart = () => {
 
   const sendMessage = () => {
     if (message.trim() && room) {
-      setChatBox(p => [...p, { text: message, type: "me", isSpoiler: isSpoilerMode }]);
-      socket.emit("send_message", { message, room, isSpoiler: isSpoilerMode });
+      const cleanMessage = message.trim().slice(0, 300);
+      setChatBox(p => [...p, { text: cleanMessage, type: "me", isSpoiler: isSpoilerMode }]);
+      socket.emit("send_message", { message: cleanMessage, room, isSpoiler: isSpoilerMode });
       setMessage(""); setMessageCount(p => p + 1); setIsSpoilerMode(false);
     }
   };
 
   const handleTyping = (e) => { setMessage(e.target.value); if (room) socket.emit("typing", { room }); };
   const sendIcebreaker = () => setMessage(icebreakers[Math.floor(Math.random() * icebreakers.length)]);
+
+  const reportUser = () => {
+    if (!room) return;
+    socket.emit("report_user", { room, reason: "Reported from chat UI." });
+    setServerNotice("Naka-submit na ang report.");
+    setStatus("rating");
+    setRoom(null);
+  };
 
   const exportChat = async () => {
     if (!chatContainerRef.current) return;
@@ -350,6 +418,12 @@ const handleStart = () => {
         [ Google AdSense Space - 728x90 ]
       </div>
 
+      {serverNotice && status !== "landing" && (
+        <div style={{ width: "100%", maxWidth: "920px", marginBottom: "10px", padding: "10px 14px", borderRadius: "14px", border: `1px solid ${isDark ? "rgba(244,114,182,0.22)" : "rgba(2,132,199,0.18)"}`, background: isDark ? "rgba(244,114,182,0.08)" : "rgba(2,132,199,0.08)", color: isDark ? "#FBCFE8" : "#075985", fontSize: "11px", fontWeight: 700, zIndex: 10 }}>
+          {serverNotice}
+        </div>
+      )}
+
       <div
         style={{ width: "100%", maxWidth: "920px", borderRadius: "28px", background: D.cardBg, backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)", border: `1px solid ${D.cardBdr}`, boxShadow: D.cardShadow, display: "flex", flexDirection: "row", height: "min(88vh, 720px)", zIndex: 10, overflow: "hidden", transition: "all 0.6s" }}
       >
@@ -362,9 +436,22 @@ const handleStart = () => {
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "2px" }}>
-<h1 className="text-4xl font-bold text-slate-900 dark:text-white">
-  PUYATAN.GG
-</h1>
+                    <h1
+                      style={{
+                        margin: 0,
+                        fontFamily: "'Bebas Neue',sans-serif",
+                        fontSize: "clamp(2.15rem, 4.8vw, 3.35rem)",
+                        letterSpacing: "0.1em",
+                        lineHeight: 0.96,
+                        background: D.logoGrad,
+                        WebkitBackgroundClip: "text",
+                        backgroundClip: "text",
+                        color: "transparent",
+                        textShadow: isDark ? "0 0 24px rgba(167,139,250,0.18)" : "0 0 18px rgba(2,132,199,0.12)",
+                      }}
+                    >
+                      PUYATAN.GG
+                    </h1>
                     <span style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "3px 9px", borderRadius: "999px", fontSize: "9px", fontWeight: 800, letterSpacing: "0.1em", background: isDark ? "rgba(34,197,94,0.1)" : "rgba(22,163,74,0.1)", border: `1px solid ${isDark ? "rgba(34,197,94,0.3)" : "rgba(22,163,74,0.25)"}`, color: isDark ? "#4ADE80" : "#16A34A" }}>
                       <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: isDark ? "#4ADE80" : "#16A34A", animation: "pulse 1.4s infinite" }} /> LIVE
                     </span>
@@ -375,9 +462,9 @@ const handleStart = () => {
                 </div>
               </div>
 
-              {nickError && (
+              {(nickError || serverNotice) && (
                 <div style={{ padding: "10px 16px", borderRadius: "12px", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.22)", color: "#FCA5A5", fontSize: "12px", fontWeight: 600, animation: "shake 0.3s ease-out" }}>
-                  ⚠️ {nickError}
+                  ⚠️ {nickError || serverNotice}
                 </div>
               )}
 
@@ -497,7 +584,10 @@ const handleStart = () => {
                   </div>
                   <p style={{ margin: 0, fontSize: "10px", lineHeight: 1.6, color: D.textMut }}>
                     <span style={{ fontWeight: 900, color: isDark ? "#F472B6" : "#E11D48" }}>HEADS UP:</span>{" "}
-                    Bawal ang bastos at explicit na content. Laging may respeto.{" "}
+                    Bawal ang bastos at explicit na content. Laging may respeto. Basahin ang{" "}
+                    <Link href="/terms" style={{ color: D.accent, fontWeight: 800, textDecoration: "underline", textUnderlineOffset: "2px" }}>terms</Link>{" "}
+                    at{" "}
+                    <Link href="/privacy" style={{ color: D.accent, fontWeight: 800, textDecoration: "underline", textUnderlineOffset: "2px" }}>privacy</Link>.{" "}
                     <span style={{ opacity: 0.6 }}>(Basic lang naman diba?)</span>
                   </p>
                 </div>
@@ -601,6 +691,8 @@ const handleStart = () => {
                     onMouseEnter={e => e.currentTarget.style.transform = "scale(1.1)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>🚪</button>
                   <button onClick={exportChat} title="Screenshot" style={{ ...iconBtn, width: "36px", height: "36px" }}
                     onMouseEnter={e => e.currentTarget.style.transform = "scale(1.1)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>📸</button>
+                  <button onClick={reportUser} title="Report User" style={{ ...iconBtn, width: "36px", height: "36px", fontSize: "14px", color: isDark ? "#FCA5A5" : "#DC2626", border: `1px solid ${isDark ? "rgba(248,113,113,0.35)" : "rgba(220,38,38,0.28)"}` }}
+                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.1)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>🚩</button>
                   <button onClick={skipChat} style={{ ...iconBtn, padding: "0 14px", height: "36px", fontSize: "12px", fontWeight: 800, letterSpacing: "0.05em" }}
                     onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>⏭ Skip</button>
                 </div>

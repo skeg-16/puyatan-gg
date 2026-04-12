@@ -1,6 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-// 1. Import ang Analytics component
 import { Analytics } from "@vercel/analytics/react";
 
 const geistSans = Geist({
@@ -14,8 +13,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Puyatan-GG",
-  description: "Dito ang tambayan ng mga puyatero.", // Pinalitan ko na rin description para mas solid!
+  metadataBase: new URL("https://puyatan-gg.vercel.app"),
+  title: "Puyatan.GG",
+  description: "Anonymous late-night chat for students and night owls in the Philippines.",
+  keywords: ["anonymous chat", "student chat", "late night chat", "Philippines", "Puyatan"],
+  openGraph: {
+    title: "Puyatan.GG",
+    description: "Find a late-night chat buddy, match by vibe, and keep the convo respectful.",
+    url: "https://puyatan-gg.vercel.app",
+    siteName: "Puyatan.GG",
+    locale: "en_PH",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Puyatan.GG",
+    description: "Anonymous late-night chat for students and night owls in the Philippines.",
+  },
 };
 
 export default function RootLayout({ children }) {
