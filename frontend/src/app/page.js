@@ -105,7 +105,7 @@ const AdBanner = () => {
 /* ─────────────────────────────────────────────────────────── */
 export default function Home() {
   const [theme,       setTheme]       = useState("dark");
-  const [status,      setStatus]      = useState("landing");
+  const [status,      setStatus]      = useState("intro"); // Binago natin para Intro Page agad
   const [connectionState, setConnectionState] = useState("connecting");
   const [serverNotice, setServerNotice] = useState("");
   const [nickname,    setNickname]    = useState("");
@@ -432,7 +432,70 @@ return (
         "hidden", transition: "all 0.6s" }}
       >
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+{/* ── STATE: INTRO (THE NEW FRONT PAGE) ── */}
+        {status === "intro" && (
+          <div style={{ flex: 1, overflowY: "auto", padding: "30px 24px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "24px", minHeight: 0, animation: "fadeSlideUp 0.5s ease-out", width: "100%" }} className="chat-scroll">
+            
+            {/* Header & Description */}
+            <div style={{ textAlign: "center", marginTop: "20px" }}>
+              <h1 style={{ margin: 0, fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(3.5rem, 8vw, 5rem)", letterSpacing: "0.1em", lineHeight: 0.96, backgroundImage: D.logoGrad, WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", animation: "pulse 3s infinite" }}>
+                PUYATAN.GG
+              </h1>
+              <p style={{ margin: "12px auto 0", fontSize: "14px", fontWeight: 600, color: D.textMut, letterSpacing: "0.05em", maxWidth: "420px", lineHeight: 1.5 }}>
+                Ang #1 anonymous chat app para sa mga studyanteng sabaw, gamers na sawi, at mga tambay ng madaling araw.
+              </p>
+            </div>
 
+            {/* Monetization / Promos Section (Nakikita sa Mobile!) */}
+            <div style={{ width: "100%", maxWidth: "728px", display: "flex", flexDirection: "column", gap: "16px", alignItems: "center", background: D.panelBg, padding: "20px", borderRadius: "20px", border: `1px solid ${D.panelBdr}`, boxShadow: D.panelShadow }}>
+              <span style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: D.accent }}>Supported By</span>
+              
+              {/* Adsterra Banner (Reused, without the hidden class) */}
+              <div style={{ width: "100%", maxWidth: "728px", height: "90px", overflow: "hidden", borderRadius: "8px", border: `1px dashed ${D.panelBdr}`, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.2)" }}>
+                <AdBanner />
+              </div>
+
+              {/* Promos Grid */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px", width: "100%" }}>
+                
+                {/* Otter Digitals */}
+                <a href="#" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", background: isDark ? "rgba(59,130,246,0.1)" : "rgba(59,130,246,0.05)", border: `1px solid ${isDark ? "rgba(59,130,246,0.3)" : "rgba(59,130,246,0.2)"}`, borderRadius: "12px", padding: "14px", textAlign: "center", transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.transform = "translateY(-3px)"} onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>
+                  <div style={{ fontSize: "2.5rem", marginBottom: "6px" }}>🦦</div>
+                  <p style={{ fontSize: "12px", fontWeight: 800, color: D.textPri, margin: "0 0 4px 0" }}>Otter Digitals</p>
+                  <p style={{ fontSize: "9px", color: D.textMut, margin: 0 }}>Websites & Systems</p>
+                </a>
+
+                {/* Pampagising Kape */}
+                <a href="https://www.profitablecpmratenetwork.com/wj5k3704g?key=a1e8c914d826c6b3834b15aa0bbba67e" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", background: isDark ? "rgba(249,115,22,0.1)" : "rgba(249,115,22,0.05)", border: `1px solid ${isDark ? "rgba(249,115,22,0.3)" : "rgba(249,115,22,0.2)"}`, borderRadius: "12px", padding: "14px", textAlign: "center", transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.transform = "translateY(-3px)"} onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>
+                  <div style={{ fontSize: "2.5rem", marginBottom: "6px" }}>☕</div>
+                  <p style={{ fontSize: "12px", fontWeight: 800, color: D.textPri, margin: "0 0 4px 0" }}>Kape Here</p>
+                  <p style={{ fontSize: "9px", color: D.textMut, margin: 0 }}>Buy on Shopee</p>
+                </a>
+
+                {/* Merch */}
+                <a href="https://www.profitablecpmratenetwork.com/wj5k3704g?key=a1e8c914d826c6b3834b15aa0bbba67e" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", background: isDark ? "rgba(236,72,153,0.1)" : "rgba(236,72,153,0.05)", border: `1px solid ${isDark ? "rgba(236,72,153,0.3)" : "rgba(236,72,153,0.2)"}`, borderRadius: "12px", padding: "14px", textAlign: "center", transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.transform = "translateY(-3px)"} onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>
+                  <div style={{ fontSize: "2.5rem", marginBottom: "6px" }}>🛍️</div>
+                  <p style={{ fontSize: "12px", fontWeight: 800, color: D.textPri, margin: "0 0 4px 0" }}>Tote Bag ₱175</p>
+                  <p style={{ fontSize: "9px", color: D.textMut, margin: 0 }}>Get Yours</p>
+                </a>
+
+              </div>
+            </div>
+
+            {/* Enter App Button */}
+            <button 
+              onClick={() => setStatus("landing")}
+              className="cta-btn"
+              style={{ padding: "16px 48px", borderRadius: "999px", border: "none", background: D.accentGrad, backgroundSize: "200% 200%", animation: "gradShift 5s ease infinite", color: "#fff", fontFamily: "'Bebas Neue', sans-serif", fontSize: "1.4rem", letterSpacing: "0.12em", cursor: "pointer", boxShadow: D.btnShadow, marginTop: "10px", transition: "transform 0.15s" }}
+              onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+              onMouseDown={e => e.currentTarget.style.transform = "scale(0.95)"}
+              onMouseUp={e => e.currentTarget.style.transform = "scale(1.05)"}
+            >
+              ENTER APP →
+            </button>
+          </div>
+        )}
           {/* ── STATE: LANDING ── */}
         {status === "landing" && (
           <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px",
