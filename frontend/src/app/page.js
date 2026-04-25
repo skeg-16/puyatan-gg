@@ -1,9 +1,10 @@
 "use client";
-import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
+import Link from "next/link";
 import io from "socket.io-client";
 import * as htmlToImage from 'html-to-image';
 import { supabase } from "@/lib/supabase";
+import OnboardingPanel from "@/app/components/OnboardingPanel";
 
 const socket = io(process.env.NEXT_PUBLIC_BACKEND_URL);
 const badWords = ["bobo","tanga","gago","puta","amputa","shit","fuck","inamo","nudes","kantot","jakol","titi","puke"];
@@ -75,37 +76,16 @@ const icebreakers = [
 ];
 
 /* ── ADBANNER COMPONENT (ADSTERRA) ── */
-const AdBanner = () => {
-  const bannerRef = useRef(null);
-
-  useEffect(() => {
-    // Check natin kung wala pang laman yung div para hindi mag-doble-doble ang ads
-    if (bannerRef.current && !bannerRef.current.hasChildNodes()) {
-      const conf = document.createElement('script');
-      conf.type = 'text/javascript';
-      conf.innerHTML = `atOptions = {
-        'key' : 'b0ac9338a38cb7f265d44e19d30617da',
-        'format' : 'iframe',
-        'height' : 90,
-        'width' : 728,
-        'params' : {}
-      };`;
-      
-      const script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.src = 'https://www.highperformanceformat.com/b0ac9338a38cb7f265d44e19d30617da/invoke.js';
-      
-      bannerRef.current.appendChild(conf);
-      bannerRef.current.appendChild(script);
-    }
-  }, []);
-
-  return <div ref={bannerRef} style={{ width: "728px", height: "90px" }} />;
-};
 
 /* ─────────────────────────────────────────────────────────── */
+const AdBanner = () => null;
+
 export default function Home() {
-  const [theme,       setTheme]       = useState("dark");
+  const [theme,       setTheme]       = useState(() => {
+    if (typeof window === "undefined") return "dark";
+    const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+    return savedTheme === "light" ? "light" : "dark";
+  });
   const [status,      setStatus]      = useState("intro"); // Binago natin para Intro Page agad
   const [connectionState, setConnectionState] = useState("connecting");
   const [serverNotice, setServerNotice] = useState("");
@@ -134,13 +114,7 @@ export default function Home() {
   const sponsorTimeoutRef = useRef(null);
 
   const isDark = theme === "dark";
-
-  useEffect(() => {
-    const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
-    if (savedTheme === "dark" || savedTheme === "light") {
-      setTheme(savedTheme);
-    }
-  }, []);
+  const isOnboarding = status === "intro" || status === "landing";
 
   useEffect(() => {
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
@@ -179,6 +153,12 @@ export default function Home() {
 
   /* ── auto-scroll ── */
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chatBox]);
+
+  function triggerFloatingEmoji(emoji) {
+    const id = Date.now() + Math.random();
+    setFloatingEmojis(p => [...p, { id, emoji }]);
+    setTimeout(() => setFloatingEmojis(p => p.filter(e => e.id !== id)), 2200);
+  }
 
   /* ── socket events ── */
   useEffect(() => {
@@ -235,12 +215,6 @@ export default function Home() {
         .forEach(e => socket.off(e));
     };
   }, []);
-  const triggerFloatingEmoji = (emoji) => {
-    const id = Date.now() + Math.random();
-    setFloatingEmojis(p => [...p, { id, emoji }]);
-    setTimeout(() => setFloatingEmojis(p => p.filter(e => e.id !== id)), 2200);
-  };
-
   const toggleTag = (tag) => {
     if (selectedTags.includes(tag)) setSelectedTags(selectedTags.filter(t => t !== tag));
     else if (selectedTags.length < 3) setSelectedTags([...selectedTags, tag]);
@@ -309,14 +283,14 @@ const handleStart = () => {
   const handleTyping = (e) => { setMessage(e.target.value); if (room) socket.emit("typing", { room }); };
   const sendIcebreaker = () => setMessage(icebreakers[Math.floor(Math.random() * icebreakers.length)]);
 
-const reportUser = async () => {
-    if (!room || !strangerInfo) return;
+const handleReportStranger = async () => {
+    if (!room) return;
 
-    // 1. I-save agad sa Supabase Database
+    // 1. I-save agad sa Supabase Database (Tahimik lang sa background)
     const { error } = await supabase.from('reports').insert([
       {
-        reported_user: strangerInfo.nickname || "Unknown Stranger",
-        reporter: nickname,
+        reported_user: "Stranger (ID: " + room.slice(0, 5) + ")", 
+        reporter: "Anonymous User", 
         reason: "Inappropriate behavior (Reported via UI)",
         room_id: room,
         status: "Pending"
@@ -324,16 +298,16 @@ const reportUser = async () => {
     ]);
 
     if (error) {
-      setServerNotice("May error sa pag-send ng report. Try again.");
-      console.error(error);
-      return;
+      console.error("Error saving report:", error);
+      // Kahit mag-error ang database, itutuloy pa rin natin ang pag-disconnect para safe ang user
     }
 
-    // 2. I-disconnect sa chat at ilipat sa rating screen
+    // 2. I-disconnect sa chat at ilipat sa next screen
     socket.emit("report_user", { room, reason: "Reported from chat UI." });
-    setServerNotice("Naka-submit na ang report. Salamat boss!");
-    setStatus("rating");
-    setRoom(null);
+    
+    if (typeof setServerNotice === 'function') setServerNotice("Naka-submit na ang report. Salamat boss!");
+    if (typeof setStatus === 'function') setStatus("rating"); 
+    if (typeof setRoom === 'function') setRoom(null);
   };
 
   const exportChat = async () => {
@@ -434,26 +408,56 @@ return (
       ))}
 
       {/* ── TOP AD BANNER (Google AdSense Placeholder) ── */}
+      {!isOnboarding && (
       <div style={{ width: "100%", maxWidth: "920px", height: "90px", marginBottom: "10px", borderRadius: "14px", border: `1px dashed ${isDark ? "rgba(255,255,255,0.15)" : "rgba(14,165,233,0.25)"}`, display: "none", alignItems: "center", justifyContent: "center", zIndex: 10, fontSize: "10px", fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: D.textMut, background: isDark ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.4)" }} className="banner-ad">
         [ Google AdSense Space - 728x90 ]
       </div>
+      )}
 
-      {serverNotice && status !== "landing" && (
+      {serverNotice && !isOnboarding && (
         <div style={{ width: "100%", maxWidth: "920px", marginBottom: "10px", padding: "10px 14px", borderRadius: "14px", border: `1px solid ${isDark ? "rgba(244,114,182,0.22)" : "rgba(2,132,199,0.18)"}`, background: isDark ? "rgba(244,114,182,0.08)" : "rgba(2,132,199,0.08)", color: isDark ? "#FBCFE8" : "#075985", fontSize: "11px", fontWeight: 700, zIndex: 10 }}>
           {serverNotice}
         </div>
       )}
 
       <div
-        style={{ width: "100%", maxWidth: "920px", borderRadius: "28px",
+        style={{ width: "100%", maxWidth: isOnboarding ? "1100px" : "920px", borderRadius: "28px",
         background: D.cardBg, backdropFilter: "blur(28px)", WebkitBackdropFilter:
         "blur(28px)", border: `1px solid ${D.cardBdr}`, boxShadow: D.cardShadow, display:
-        "flex", flexDirection: "row", flex: 1, minHeight: 0, maxHeight: "760px", zIndex: 10, overflow:
+        "flex", flexDirection: "row", flex: 1, minHeight: 0, maxHeight: isOnboarding ? "820px" : "760px", zIndex: 10, overflow:
         "hidden", transition: "all 0.6s" }}
       >
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {(status === "intro" || status === "landing") && (
+          <OnboardingPanel
+            status={status}
+            setStatus={setStatus}
+            nickname={nickname}
+            setNickname={setNickname}
+            nickError={nickError}
+            serverNotice={serverNotice}
+            selectedUniv={selectedUniv}
+            setSelectedUniv={setSelectedUniv}
+            selectedMood={selectedMood}
+            setSelectedMood={setSelectedMood}
+            selectedTags={selectedTags}
+            toggleTag={toggleTag}
+            customTag={customTag}
+            setCustomTag={setCustomTag}
+            handleAddCustomTag={handleAddCustomTag}
+            agreed={agreed}
+            setAgreed={setAgreed}
+            handleStart={handleStart}
+            connectionState={connectionState}
+            isDark={isDark}
+            D={D}
+            universities={universities}
+            vibes={vibes}
+            tagGroups={tagGroups}
+          />
+        )}
 {/* ── STATE: INTRO (THE NEW FRONT PAGE) ── */}
-        {status === "intro" && (
+        {false && status === "intro" && (
           <div style={{ flex: 1, overflowY: "auto", padding: "40px 24px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", gap: "24px", minHeight: 0, animation: "fadeSlideUp 0.5s ease-out", width: "100%" }} className="chat-scroll">
             
             {/* Header & Description */}
@@ -517,7 +521,7 @@ return (
           </div>
         )}
           {/* ── STATE: LANDING ── */}
-        {status === "landing" && (
+        {false && status === "landing" && (
           <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px",
           display: "flex", flexDirection: "column", gap: "12px", minHeight: 0 }}
           className="chat-scroll">
@@ -780,7 +784,7 @@ return (
                     onMouseEnter={e => e.currentTarget.style.transform = "scale(1.1)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>🚪</button>
                   <button onClick={exportChat} title="Screenshot" style={{ ...iconBtn, width: "36px", height: "36px" }}
                     onMouseEnter={e => e.currentTarget.style.transform = "scale(1.1)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>📸</button>
-                  <button onClick={reportUser} title="Report User" style={{ ...iconBtn, width: "36px", height: "36px", fontSize: "14px", color: isDark ? "#FCA5A5" : "#DC2626", border: `1px solid ${isDark ? "rgba(248,113,113,0.35)" : "rgba(220,38,38,0.28)"}` }}
+                  <button onClick={handleReportStranger} title="Report User" style={{ ...iconBtn, width: "36px", height: "36px", fontSize: "14px", color: isDark ? "#FCA5A5" : "#DC2626", border: `1px solid ${isDark ? "rgba(248,113,113,0.35)" : "rgba(220,38,38,0.28)"}` }}
                     onMouseEnter={e => e.currentTarget.style.transform = "scale(1.1)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>🚩</button>
                   <button onClick={skipChat} style={{ ...iconBtn, padding: "0 14px", height: "36px", fontSize: "12px", fontWeight: 800, letterSpacing: "0.05em" }}
                     onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>⏭ Skip</button>
@@ -863,6 +867,7 @@ return (
         </div>
 
 {/* ── AD SIDEBAR (Hybrid Monetization Zone) ── */}
+        {!isOnboarding && (
         <div style={{ width: "220px", flexShrink: 0, borderLeft: `1px solid ${D.sidebarBdr}`,
         background: D.sidebarBg, display: "flex", flexDirection: "column", alignItems:
         "center", padding: "20px 16px", gap: "16px", overflowY: "auto" }}
@@ -901,6 +906,7 @@ return (
           </div>
 
         </div>
+        )}
       </div>
 
       {/* ── GLOBAL STYLES ── */}

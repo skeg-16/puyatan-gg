@@ -130,7 +130,7 @@ export default function AdminDashboard() {
                   🎉 Wala nang pasaway. Linis ng chat natin boss!
                 </div>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <div style={{ display: "flex"  , flexDirection: "column", gap: "12px" }}>
                   {reports.map((report) => (
                     <div key={report.id} style={{ background: D.panelBg, border: `1px solid ${D.panelBdr}`, padding: "16px 20px", borderRadius: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <div>
