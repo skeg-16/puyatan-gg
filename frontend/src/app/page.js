@@ -141,7 +141,7 @@ export default function Home() {
   const audioChunksRef = useRef([]);
   const isRecordingAttemptRef = useRef(false);
 
-  const [showSkipConfirm, setShowSkipConfirm] = useState(false);
+
   const [stats, setStats] = useState({ activeUsers: 0 });
   const [mounted, setMounted] = useState(false);
 
@@ -933,7 +933,7 @@ return (
                   <button onClick={handleReportStranger} className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:gap-1.5 sm:px-3 sm:py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-xs font-bold text-red-400 transition-colors">
                     ⚠️ <span className="hidden sm:inline">Report</span>
                   </button>
-                  <button onClick={() => setShowSkipConfirm(true)} className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:gap-1.5 sm:px-3 sm:py-2 rounded-lg bg-pink-500/20 hover:bg-pink-500/40 text-xs font-bold text-pink-200 transition-colors">
+                  <button onClick={skipChat} className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:gap-1.5 sm:px-3 sm:py-2 rounded-lg bg-pink-500/20 hover:bg-pink-500/40 text-xs font-bold text-pink-200 transition-colors">
                     ⏭ <span className="hidden sm:inline">Next</span>
                   </button>
                 </div>
