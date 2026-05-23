@@ -511,20 +511,20 @@ const handleReportStranger = async () => {
   });
 
   const lbl = { fontSize: "9px", fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", color: D.textMut, display: "block", marginBottom: "10px" };
-  const iconBtn = { background: D.iconBtnBg, border: `1px solid ${D.iconBtnBdr}`, color: D.iconBtnClr, borderRadius: "12px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" };
+  const iconBtn = { background: D.iconBtnBg, border: `1px solid ${D.iconBtnBdr}`, color: D.iconBtnClr, borderRadius: "12px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "transition-colors 0.15s" };
 
   if (!mounted) return null;
 
 return (
     <div
       className="p-0 sm:p-2 h-[100dvh] w-[100vw] flex flex-col items-center justify-center relative overflow-hidden box-border"
-      style={{ background: D.pageBg, fontFamily: "'Figtree', sans-serif", transition: "background 0.6s" }}
+      style={{ background: D.pageBg, fontFamily: "'Figtree', sans-serif", transition: "background 0.2s" }}
     >
       {/* ── AURORA BACKGROUND BLOBS ── */}
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0 }}>
-        <div className="aurora-blob b1" style={{ background: D.blob1 }} />
-        <div className="aurora-blob b2" style={{ background: D.blob2 }} />
-        <div className="aurora-blob b3" style={{ background: D.blob3 }} />
+        <div className="aurora-blob b1" style={{ background: D.blob1, willChange: "transform" }} />
+        <div className="aurora-blob b2" style={{ background: D.blob2, willChange: "transform" }} />
+        <div className="aurora-blob b3" style={{ background: D.blob3, willChange: "transform" }} />
         <div style={{ position: "absolute", inset: 0, backgroundImage: `radial-gradient(circle, ${isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)"} 1px, transparent 1px)`, backgroundSize: "28px 28px" }} />
       </div>
 
@@ -567,7 +567,7 @@ return (
       )}
 
       <div
-        className={`w-full flex-1 flex flex-col md:flex-row min-h-0 z-10 overflow-hidden transition-all duration-600 rounded-none sm:rounded-[28px] ${status === "landing" ? "sm:max-w-[1100px] sm:max-h-[820px]" : "sm:max-w-[920px] sm:max-h-[760px]"}`}
+        className={`w-full flex-1 flex flex-col md:flex-row min-h-0 z-10 overflow-hidden transition-colors duration-200 rounded-none sm:rounded-[28px] ${status === "landing" ? "sm:max-w-[1100px] sm:max-h-[820px]" : "sm:max-w-[920px] sm:max-h-[760px]"}`}
         style={{
           background: D.cardBg, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: `1px solid ${D.cardBdr}`, boxShadow: D.cardShadow,
         }}
@@ -1077,7 +1077,7 @@ return (
 
         /* ── Aurora blobs ── */
         .aurora-blob {
-          position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.5; pointer-events: none; mix-blend-mode: screen;
+          position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; pointer-events: none; mix-blend-mode: screen; will-change: transform;
         }
         .b1 { width: 600px; height: 600px; top: -10%; left: -10%; animation: drift1 22s ease-in-out infinite alternate; background: radial-gradient(circle, rgba(236,72,153,0.3) 0%, transparent 70%); }
         .b2 { width: 500px; height: 500px; bottom: -10%; right: -10%; animation: drift2 26s ease-in-out infinite alternate; background: radial-gradient(circle, rgba(168,85,247,0.3) 0%, transparent 70%); }
