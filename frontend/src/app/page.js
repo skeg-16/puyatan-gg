@@ -544,22 +544,23 @@ return (
       ))}
 
       {/* ── ONBOARDING AESTHETICS (TICKER & BACKGROUND EMOJIS) ── */}
-      {isOnboarding && (
+      {status === "landing" && (
         <>
-          <div className="absolute top-6 left-0 right-0 flex justify-center z-[40] pointer-events-none px-4">
-            <div className="bg-pink-500/20 border border-pink-500/30 backdrop-blur-md px-4 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold text-pink-200 shadow-[0_0_15px_rgba(236,72,153,0.3)] flex items-center gap-2 max-w-full text-center">
+          <div className="relative mt-[60px] mb-4 sm:mt-8 sm:mb-6 w-full flex justify-center z-[40] pointer-events-none px-4">
+            <div className="bg-pink-500/20 border border-pink-500/30 backdrop-blur-md px-4 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold text-pink-200 flex items-center gap-2 max-w-full text-center" style={{ boxShadow: "0 4px 20px rgba(236,72,153,0.15)" }}>
               <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-pink-400 animate-pulse shrink-0"></span>
               <span className="truncate">🔥 {stats.activeUsers * 3 + 1240} students are currently puyat!</span>
             </div>
           </div>
           
           <div className="absolute inset-0 pointer-events-none overflow-hidden z-[5]">
-            {['🔥','👀','🥀','🎧','🎮','💔','✨','🌙'].map((emoji, i) => (
-              <div key={i} className="absolute text-4xl sm:text-5xl opacity-10 sm:opacity-20 drop-shadow-2xl" style={{
-                left: `${10 + (i * 11)}%`,
+            {['🔥','👀','🥀','🎧','🎮','💔'].map((emoji, i) => (
+              <div key={i} className="absolute text-4xl sm:text-5xl opacity-10 sm:opacity-20" style={{
+                left: `${15 + (i * 14)}%`,
                 bottom: "-10%",
                 animation: `floatUp ${12 + i * 2}s linear infinite`,
-                animationDelay: `${i * 1.5}s`
+                animationDelay: `${i * 1.5}s`,
+                willChange: "transform"
               }}>
                 {emoji}
               </div>
@@ -573,9 +574,9 @@ return (
       )}
 
       <div
-        className={`w-full flex-1 flex flex-col md:flex-row min-h-0 z-10 overflow-hidden transition-all duration-600 rounded-none sm:rounded-[28px] ${isOnboarding ? "sm:max-w-[1100px] sm:max-h-[820px]" : "sm:max-w-[920px] sm:max-h-[760px]"}`}
+        className={`w-full flex-1 flex flex-col md:flex-row min-h-0 z-10 overflow-hidden transition-all duration-600 rounded-none sm:rounded-[28px] ${status === "landing" ? "sm:max-w-[1100px] sm:max-h-[820px]" : "sm:max-w-[920px] sm:max-h-[760px]"}`}
         style={{
-          background: D.cardBg, backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)", border: `1px solid ${D.cardBdr}`, boxShadow: D.cardShadow,
+          background: D.cardBg, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: `1px solid ${D.cardBdr}`, boxShadow: D.cardShadow,
         }}
       >
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>

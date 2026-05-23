@@ -154,8 +154,8 @@ export default function OnboardingPanel({
         </div>
       )}
 
-      <div className="landing-main-grid grid grid-cols-1 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-[14px] min-h-0">
-        <div style={{ display: "grid", gap: "14px", minHeight: 0 }}>
+      <div className="landing-main-grid grid grid-cols-1 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-[14px]">
+        <div style={{ display: "grid", gap: "14px" }}>
           <section
             style={{
               ...panelBase,
@@ -292,7 +292,7 @@ export default function OnboardingPanel({
             </div>
           </div>
 
-          <div style={{ display: "grid", gap: "12px", alignContent: "start", minHeight: 0 }}>
+          <div style={{ display: "grid", gap: "12px", alignContent: "start" }}>
             {tagGroups.map((g) => (
               <div key={g.cat}>
                 <span style={{ fontSize: "9px", fontWeight: 900, letterSpacing: "0.16em", textTransform: "uppercase", color: isDark ? g.dk : g.lt, display: "block", marginBottom: "8px" }}>
