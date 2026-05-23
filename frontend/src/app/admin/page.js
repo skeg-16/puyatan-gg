@@ -1,165 +1,280 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase"; // Ito yung ginawa nating tulay
+import io from "socket.io-client";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [reports, setReports] = useState([]);
-  const [stats, setStats] = useState({ activeUsers: 142, totalMatches: 1250 }); // Fake stats muna
+  const [bans, setBans] = useState([]);
+  const [stats, setStats] = useState({ activeUsers: 0, totalMatches: 0, waitingUsers: 0 });
+  const [pwd, setPwd] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const socketRef = useRef(null);
 
-  // Kukunin natin ang mga "Pending" reports mula sa database kapag nag-load ang page
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+
   useEffect(() => {
+    if (!isAuthenticated) return;
+    
+    // Connect to Socket.io for Real-time Reports
+    const socket = io(backendUrl);
+    socketRef.current = socket;
+    
+    socket.emit("admin_login", pwd);
+    
+    socket.on("admin_new_report", (newReport) => {
+      setReports(prev => [newReport, ...prev]);
+    });
+
+    // Initial Fetch
     fetchReports();
-  }, []);
+    fetchBans();
+
+    // Polling for Live Stats
+    const fetchStats = async () => {
+      try {
+        const res = await fetch(`${backendUrl}/stats`);
+        const data = await res.json();
+        setStats({
+          activeUsers: data.activeUsers || 0,
+          totalMatches: data.totalMatches || 0,
+          waitingUsers: data.waitingUsers || 0
+        });
+      } catch (err) {}
+    };
+    fetchStats();
+    const statsInterval = setInterval(fetchStats, 3000);
+
+    return () => {
+      clearInterval(statsInterval);
+      socket.disconnect();
+    };
+  }, [isAuthenticated, backendUrl, pwd]);
 
   const fetchReports = async () => {
-    const { data, error } = await supabase
-      .from('reports')
-      .select('*')
-      .eq('status', 'Pending')
-      .order('created_at', { ascending: false });
+    try {
+      const res = await fetch(`${backendUrl}/reports`);
+      setReports(await res.json());
+    } catch (err) { console.error(err); }
+  };
 
-    if (error) {
-      console.error("Error fetching reports:", error);
-    } else {
-      setReports(data || []);
+  const fetchBans = async () => {
+    try {
+      const res = await fetch(`${backendUrl}/bans`);
+      setBans(await res.json());
+    } catch (err) { console.error(err); }
+  };
+
+  const handleAction = async (id, action) => {
+    if (!confirm(`Are you sure you want to mark this report as ${action}?`)) return;
+    try {
+      await fetch(`${backendUrl}/reports/${id}/action`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action })
+      });
+      fetchReports();
+      if (action === "Banned") fetchBans();
+    } catch (err) {
+      alert("Error updating report.");
     }
   };
 
-  // Papalitan nito ang status sa database kapag may pinindot ka
-  const handleAction = async (id, action) => {
-    const { error } = await supabase
-      .from('reports')
-      .update({ status: action })
-      .eq('id', id);
-
-    if (error) {
-      alert("May error sa server: " + error.message);
-    } else {
-      setReports(reports.filter(r => r.id !== id));
-      alert(`Report successfully marked as ${action}!`);
+  const handleUnban = async (ip) => {
+    if (!confirm(`Are you sure you want to unban IP: ${ip}?`)) return;
+    try {
+      await fetch(`${backendUrl}/bans/unban`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ip })
+      });
+      fetchBans();
+    } catch (err) {
+      alert("Error unbanning user.");
     }
   };
 
   /* ── Design Tokens ── */
   const D = {
-    pageBg: "#030008",
-    blob1: "#6D28D9", blob2: "#9D174D", blob3: "#0E7490",
-    cardBg: "rgba(255,255,255,0.04)",
-    cardBdr: "rgba(255,255,255,0.09)",
-    cardShadow: "0 0 1px rgba(109,40,217,0.12), 0 32px 80px rgba(3,0,8,0.9), inset 0 1px 0 rgba(255,255,255,0.07)",
-    panelBg: "rgba(255,255,255,0.04)",
-    panelBdr: "rgba(255,255,255,0.08)",
-    textPri: "#EDE9FE", textMut: "rgba(196,181,253,0.45)",
-    accent: "#A78BFA",
-    logoGrad: "linear-gradient(90deg, #C4B5FD 0%, #F9A8D4 50%, #67E8F9 100%)",
+    pageBg: "#0c0406",
+    sidebarBg: "#14070a",
+    cardBg: "#1a090e",
+    cardBdr: "#3b111c",
+    textPri: "#fdf2f4",
+    textMut: "#fda4af",
+    accent: "#e11d48",
+    danger: "#f87171",
+    success: "#34d399",
   };
 
+  if (!isAuthenticated) {
+    return (
+      <div style={{ height: "100dvh", width: "100vw", background: D.pageBg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter', sans-serif" }}>
+        <div style={{ background: D.sidebarBg, padding: "40px", borderRadius: "12px", textAlign: "center", border: `1px solid ${D.cardBdr}`, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.5)" }}>
+          <h2 style={{ color: D.textPri, marginBottom: "8px", fontSize: "1.5rem", fontWeight: 800 }}>ADMIN PORTAL</h2>
+          <p style={{ color: D.textMut, marginBottom: "24px", fontSize: "0.9rem" }}>Please enter your credentials</p>
+          <input 
+            type="password" 
+            value={pwd} 
+            onChange={e => setPwd(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && pwd === "admin123" && setIsAuthenticated(true)}
+            placeholder="Password"
+            style={{ padding: "12px 16px", borderRadius: "8px", border: `1px solid ${D.cardBdr}`, background: D.pageBg, color: D.textPri, outline: "none", width: "100%", marginBottom: "16px", boxSizing: "border-box" }}
+          />
+          <button 
+            onClick={() => pwd === "admin123" ? setIsAuthenticated(true) : alert("Invalid Password")}
+            style={{ padding: "12px", width: "100%", borderRadius: "8px", background: D.accent, color: "#fff", border: "none", fontWeight: 600, cursor: "pointer", transition: "0.2s" }}
+            onMouseEnter={e => e.currentTarget.style.opacity = 0.9} onMouseLeave={e => e.currentTarget.style.opacity = 1}>
+            Sign In
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const pendingReports = reports.filter(r => r.status === "pending");
+
   return (
-    <div style={{ height: "100dvh", width: "100vw", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "16px", position: "relative", overflow: "hidden", background: D.pageBg, fontFamily: "'Figtree', sans-serif", boxSizing: "border-box" }}>
+    <div style={{ height: "100dvh", width: "100vw", display: "flex", background: D.pageBg, fontFamily: "'Inter', sans-serif", color: D.textPri, overflow: "hidden" }}>
       
-      {/* ── AURORA BACKGROUND ── */}
-      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0 }}>
-        <div style={{ position: "absolute", borderRadius: "50%", filter: "blur(90px)", opacity: 0.3, width: "500px", height: "500px", top: "10%", left: "10%", background: D.blob1 }} />
-        <div style={{ position: "absolute", borderRadius: "50%", filter: "blur(90px)", opacity: 0.3, width: "400px", height: "400px", bottom: "10%", right: "-5%", background: D.blob2 }} />
-        <div style={{ position: "absolute", inset: 0, backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)`, backgroundSize: "28px 28px" }} />
+      {/* ── SIDEBAR ── */}
+      <div style={{ width: "260px", background: D.sidebarBg, borderRight: `1px solid ${D.cardBdr}`, display: "flex", flexDirection: "column", padding: "24px 16px", zIndex: 10 }}>
+        <h1 style={{ margin: "0 0 40px 8px", fontSize: "1.2rem", fontWeight: 900, letterSpacing: "0.05em", color: D.accent }}>
+          PUYATAN ADMIN
+        </h1>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1 }}>
+          <button onClick={() => setActiveTab("overview")} style={{ background: activeTab === "overview" ? D.accent : "transparent", border: "none", padding: "12px 16px", borderRadius: "8px", color: activeTab === "overview" ? "#fff" : D.textMut, textAlign: "left", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "0.2s" }}>
+            📊 Dashboard
+          </button>
+          <button onClick={() => setActiveTab("moderation")} style={{ background: activeTab === "moderation" ? D.accent : "transparent", border: "none", padding: "12px 16px", borderRadius: "8px", color: activeTab === "moderation" ? "#fff" : D.textMut, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "0.2s" }}>
+            🛡️ Moderation
+            {pendingReports.length > 0 && <span style={{ background: D.danger, color: "#fff", padding: "2px 8px", borderRadius: "99px", fontSize: "11px" }}>{pendingReports.length}</span>}
+          </button>
+          <button onClick={() => setActiveTab("bans")} style={{ background: activeTab === "bans" ? D.accent : "transparent", border: "none", padding: "12px 16px", borderRadius: "8px", color: activeTab === "bans" ? "#fff" : D.textMut, textAlign: "left", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "0.2s" }}>
+            🚫 Ban List
+          </button>
+        </div>
+
+        <Link href="/" style={{ textDecoration: "none", color: D.textMut, fontSize: "13px", fontWeight: 500, padding: "12px 16px", display: "block", marginTop: "auto", borderTop: `1px solid ${D.cardBdr}` }}>
+          ← Exit Admin
+        </Link>
       </div>
 
-      {/* ── MAIN ADMIN WINDOW ── */}
-      <div style={{ width: "100%", maxWidth: "1100px", height: "min(90vh, 800px)", borderRadius: "24px", background: D.cardBg, backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)", border: `1px solid ${D.cardBdr}`, boxShadow: D.cardShadow, display: "flex", zIndex: 10, overflow: "hidden" }}>
+      {/* ── MAIN CONTENT AREA ── */}
+      <div style={{ flex: 1, padding: "40px", overflowY: "auto" }}>
         
-        {/* ── SIDEBAR ── */}
-        <div style={{ width: "240px", borderRight: `1px solid ${D.panelBdr}`, display: "flex", flexDirection: "column", padding: "24px 16px", background: "rgba(0,0,0,0.2)" }}>
-          <h1 style={{ margin: "0 0 30px 8px", fontFamily: "'Bebas Neue', sans-serif", fontSize: "2rem", letterSpacing: "0.1em", backgroundImage: D.logoGrad, WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
-            PUYATAN ADMIN
-          </h1>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1 }}>
-            <button onClick={() => setActiveTab("overview")} style={{ background: activeTab === "overview" ? "rgba(255,255,255,0.08)" : "transparent", border: "none", padding: "12px 16px", borderRadius: "12px", color: activeTab === "overview" ? D.textPri : D.textMut, textAlign: "left", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "0.2s" }}>
-              📊 Overview
-            </button>
-            <button onClick={() => setActiveTab("moderation")} style={{ background: activeTab === "moderation" ? "rgba(255,255,255,0.08)" : "transparent", border: "none", padding: "12px 16px", borderRadius: "12px", color: activeTab === "moderation" ? D.textPri : D.textMut, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "0.2s" }}>
-              🛡️ Moderation
-              {reports.length > 0 && <span style={{ background: "#E11D48", color: "#fff", padding: "2px 8px", borderRadius: "99px", fontSize: "10px" }}>{reports.length}</span>}
-            </button>
-          </div>
-
-          <Link href="/" style={{ textDecoration: "none", color: D.textMut, fontSize: "12px", fontWeight: 600, padding: "12px 16px", display: "block", marginTop: "auto", borderTop: `1px dashed ${D.panelBdr}` }}>
-            ← Back to App
-          </Link>
-        </div>
-
-        {/* ── MAIN CONTENT AREA ── */}
-        <div style={{ flex: 1, padding: "32px", overflowY: "auto" }}>
-          
-          {/* TAB: OVERVIEW */}
-          {activeTab === "overview" && (
-            <div style={{ animation: "fadeIn 0.3s ease-out" }}>
-              <h2 style={{ margin: "0 0 24px 0", color: D.textPri, fontSize: "24px" }}>System Overview</h2>
-              
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "32px" }}>
-                <div style={{ background: D.panelBg, border: `1px solid ${D.panelBdr}`, padding: "20px", borderRadius: "16px" }}>
-                  <span style={{ fontSize: "11px", color: D.textMut, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 800 }}>Active Users</span>
-                  <div style={{ fontSize: "2.5rem", fontFamily: "'Bebas Neue', sans-serif", color: "#4ADE80", marginTop: "8px" }}>{stats.activeUsers}</div>
-                </div>
-                <div style={{ background: D.panelBg, border: `1px solid ${D.panelBdr}`, padding: "20px", borderRadius: "16px" }}>
-                  <span style={{ fontSize: "11px", color: D.textMut, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 800 }}>Total Matches Today</span>
-                  <div style={{ fontSize: "2.5rem", fontFamily: "'Bebas Neue', sans-serif", color: "#60A5FA", marginTop: "8px" }}>{stats.totalMatches}</div>
-                </div>
-                <div style={{ background: D.panelBg, border: `1px solid ${D.panelBdr}`, padding: "20px", borderRadius: "16px" }}>
-                  <span style={{ fontSize: "11px", color: D.textMut, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 800 }}>Pending Reports</span>
-                  <div style={{ fontSize: "2.5rem", fontFamily: "'Bebas Neue', sans-serif", color: "#F43F5E", marginTop: "8px" }}>{reports.length}</div>
-                </div>
+        {/* TAB: OVERVIEW */}
+        {activeTab === "overview" && (
+          <div style={{ animation: "fadeIn 0.3s ease-out" }}>
+            <h2 style={{ margin: "0 0 32px 0", fontSize: "28px", fontWeight: 700 }}>System Overview</h2>
+            
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "24px" }}>
+              <div style={{ background: D.sidebarBg, border: `1px solid ${D.cardBdr}`, padding: "24px", borderRadius: "12px", boxShadow: "0 4px 10px rgba(0, 0, 0, 0.4)" }}>
+                <span style={{ fontSize: "12px", color: D.textMut, textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Active Connections</span>
+                <div style={{ fontSize: "2.5rem", fontWeight: 800, color: D.success, marginTop: "12px" }}>{stats.activeUsers}</div>
               </div>
-
-              <div style={{ background: D.panelBg, border: `1px solid ${D.panelBdr}`, padding: "40px", borderRadius: "16px", textAlign: "center", color: D.textMut, fontSize: "12px", borderStyle: "dashed" }}>
-                [ Chart Placeholder: Ilalagay natin dito ang Recharts kapag may database na tayo ]
+              <div style={{ background: D.sidebarBg, border: `1px solid ${D.cardBdr}`, padding: "24px", borderRadius: "12px", boxShadow: "0 4px 10px rgba(0, 0, 0, 0.4)" }}>
+                <span style={{ fontSize: "12px", color: D.textMut, textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Users in Queue</span>
+                <div style={{ fontSize: "2.5rem", fontWeight: 800, color: D.textPri, marginTop: "12px" }}>{stats.waitingUsers}</div>
+              </div>
+              <div style={{ background: D.sidebarBg, border: `1px solid ${D.cardBdr}`, padding: "24px", borderRadius: "12px", boxShadow: "0 4px 10px rgba(0, 0, 0, 0.4)" }}>
+                <span style={{ fontSize: "12px", color: D.textMut, textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Total Matches Today</span>
+                <div style={{ fontSize: "2.5rem", fontWeight: 800, color: D.accent, marginTop: "12px" }}>{stats.totalMatches}</div>
+              </div>
+              <div style={{ background: D.sidebarBg, border: `1px solid ${D.cardBdr}`, padding: "24px", borderRadius: "12px", boxShadow: "0 4px 10px rgba(0, 0, 0, 0.4)" }}>
+                <span style={{ fontSize: "12px", color: D.textMut, textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>Pending Reports</span>
+                <div style={{ fontSize: "2.5rem", fontWeight: 800, color: D.danger, marginTop: "12px" }}>{pendingReports.length}</div>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* TAB: MODERATION */}
-          {activeTab === "moderation" && (
-            <div style={{ animation: "fadeIn 0.3s ease-out" }}>
-              <h2 style={{ margin: "0 0 24px 0", color: D.textPri, fontSize: "24px" }}>Active Reports</h2>
-              
-              {reports.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "60px", color: D.textMut, background: D.panelBg, borderRadius: "16px", border: `1px solid ${D.panelBdr}` }}>
-                  🎉 Wala nang pasaway. Linis ng chat natin boss!
-                </div>
-              ) : (
-                <div style={{ display: "flex"  , flexDirection: "column", gap: "12px" }}>
-                  {reports.map((report) => (
-                    <div key={report.id} style={{ background: D.panelBg, border: `1px solid ${D.panelBdr}`, padding: "16px 20px", borderRadius: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-                          <span style={{ background: "rgba(244,63,94,0.1)", color: "#F43F5E", padding: "4px 8px", borderRadius: "6px", fontSize: "10px", fontWeight: 800 }}>{report.id.slice(0,8)}</span>
-                          <span style={{ fontSize: "14px", color: D.textPri, fontWeight: 700 }}>{report.reported_user}</span>
-                          <span style={{ fontSize: "12px", color: D.textMut }}>reported by {report.reporter}</span>
-                        </div>
-                        <div style={{ fontSize: "12px", color: D.textMut }}>
-                          <strong style={{ color: D.accent }}>Reason:</strong> {report.reason} &nbsp;|&nbsp; <strong>Room:</strong> {report.room_id}
-                        </div>
+        {/* TAB: MODERATION */}
+        {activeTab === "moderation" && (
+          <div style={{ animation: "fadeIn 0.3s ease-out" }}>
+            <h2 style={{ margin: "0 0 32px 0", fontSize: "28px", fontWeight: 700 }}>Moderation Queue</h2>
+            
+            {pendingReports.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "80px", color: D.textMut, background: D.sidebarBg, borderRadius: "12px", border: `1px solid ${D.cardBdr}` }}>
+                <div style={{ fontSize: "3rem", marginBottom: "16px" }}>🎉</div>
+                <h3 style={{ fontSize: "1.2rem", color: D.textPri }}>Inbox Zero</h3>
+                <p>There are no pending reports to review.</p>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                {pendingReports.map((report) => (
+                  <div key={report.id} style={{ background: D.sidebarBg, border: `1px solid ${D.cardBdr}`, padding: "24px", borderRadius: "12px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)" }}>
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
+                        <span style={{ background: "rgba(239,68,68,0.1)", color: D.danger, padding: "4px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: 700 }}>REPORT ID: {report.id?.slice(0,8) || "N/A"}</span>
+                        <span style={{ fontSize: "13px", color: D.textMut }}>Reported At: {new Date(report.createdAt).toLocaleString()}</span>
                       </div>
-                      
-                      <div style={{ display: "flex", gap: "8px" }}>
-                        <button onClick={() => handleAction(report.id, 'Dismissed')} style={{ background: "transparent", border: `1px solid ${D.panelBdr}`, color: D.textMut, padding: "8px 16px", borderRadius: "8px", fontSize: "11px", fontWeight: 700, cursor: "pointer", transition: "0.2s" }} onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.05)"} onMouseLeave={e => e.currentTarget.style.background="transparent"}>
-                          Dismiss
-                        </button>
-                        <button onClick={() => handleAction(report.id, 'Banned')} style={{ background: "rgba(225,29,72,0.15)", border: "1px solid rgba(225,29,72,0.3)", color: "#FDA4AF", padding: "8px 16px", borderRadius: "8px", fontSize: "11px", fontWeight: 700, cursor: "pointer", transition: "0.2s" }} onMouseEnter={e => e.currentTarget.style.background="rgba(225,29,72,0.3)"} onMouseLeave={e => e.currentTarget.style.background="rgba(225,29,72,0.15)"}>
-                          Ban User
-                        </button>
+                      <div style={{ marginBottom: "16px" }}>
+                        <h4 style={{ margin: "0 0 8px 0", color: D.textPri, fontSize: "16px" }}>Violation: {report.reason}</h4>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", fontSize: "13px", color: D.textMut }}>
+                          <div><strong>Reported IP:</strong> {report.reportedIp || "Unknown"}</div>
+                          <div><strong>Reporter IP:</strong> {report.reporterIp}</div>
+                          <div><strong>Room ID:</strong> {report.roomId}</div>
+                        </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                    
+                    <div style={{ display: "flex", flexDirection: "column", gap: "10px", minWidth: "120px" }}>
+                      <button onClick={() => handleAction(report.id, 'Banned')} style={{ background: D.danger, border: "none", color: "#fff", padding: "10px 16px", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", transition: "0.2s" }} onMouseEnter={e => e.currentTarget.style.opacity = 0.9} onMouseLeave={e => e.currentTarget.style.opacity = 1}>
+                        Ban User IP
+                      </button>
+                      <button onClick={() => handleAction(report.id, 'Dismissed')} style={{ background: "transparent", border: `1px solid ${D.cardBdr}`, color: D.textPri, padding: "10px 16px", borderRadius: "6px", fontSize: "13px", fontWeight: 600, cursor: "pointer", transition: "0.2s" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.05)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                        Dismiss
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
-        </div>
+        {/* TAB: BANS */}
+        {activeTab === "bans" && (
+          <div style={{ animation: "fadeIn 0.3s ease-out" }}>
+            <h2 style={{ margin: "0 0 32px 0", fontSize: "28px", fontWeight: 700 }}>Ban List</h2>
+            
+            {bans.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "80px", color: D.textMut, background: D.sidebarBg, borderRadius: "12px", border: `1px solid ${D.cardBdr}` }}>
+                <p>No banned users currently.</p>
+              </div>
+            ) : (
+              <table style={{ width: "100%", borderCollapse: "collapse", background: D.sidebarBg, borderRadius: "12px", overflow: "hidden", border: `1px solid ${D.cardBdr}` }}>
+                <thead style={{ background: "rgba(0,0,0,0.2)" }}>
+                  <tr>
+                    <th style={{ padding: "16px", textAlign: "left", fontSize: "13px", color: D.textMut, fontWeight: 600, borderBottom: `1px solid ${D.cardBdr}` }}>IP Address</th>
+                    <th style={{ padding: "16px", textAlign: "left", fontSize: "13px", color: D.textMut, fontWeight: 600, borderBottom: `1px solid ${D.cardBdr}` }}>Reason</th>
+                    <th style={{ padding: "16px", textAlign: "left", fontSize: "13px", color: D.textMut, fontWeight: 600, borderBottom: `1px solid ${D.cardBdr}` }}>Banned At</th>
+                    <th style={{ padding: "16px", textAlign: "right", fontSize: "13px", color: D.textMut, fontWeight: 600, borderBottom: `1px solid ${D.cardBdr}` }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bans.map((ban) => (
+                    <tr key={ban.ip} style={{ borderBottom: `1px solid ${D.cardBdr}` }}>
+                      <td style={{ padding: "16px", fontSize: "14px", fontWeight: 600 }}>{ban.ip}</td>
+                      <td style={{ padding: "16px", fontSize: "14px", color: D.danger }}>{ban.reason}</td>
+                      <td style={{ padding: "16px", fontSize: "13px", color: D.textMut }}>{new Date(ban.bannedAt).toLocaleString()}</td>
+                      <td style={{ padding: "16px", textAlign: "right" }}>
+                        <button onClick={() => handleUnban(ban.ip)} style={{ background: "transparent", border: `1px solid ${D.cardBdr}`, color: D.textPri, padding: "6px 12px", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer", transition: "0.2s" }} onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.05)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                          Revoke Ban
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+
       </div>
 
       <style>{`

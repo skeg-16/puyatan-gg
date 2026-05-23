@@ -16,6 +16,7 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || "https://puyatan-gg.verce
 const DATA_DIR = path.join(__dirname, "data");
 const REPORTS_FILE = path.join(DATA_DIR, "reports.json");
 const RATINGS_FILE = path.join(DATA_DIR, "ratings.json");
+const BANS_FILE = path.join(DATA_DIR, "bans.json");
 const MAX_WAITING_USERS = 500;
 const MAX_NICKNAME_LENGTH = 24;
 const MAX_TAGS = 3;
@@ -68,6 +69,7 @@ const io = new Server(server, {
 });
 
 let waitingUsers = [];
+let totalMatches = 0;
 const roomState = new Map();
 const rateLimitState = new Map();
 
@@ -87,6 +89,16 @@ function appendJson(filePath, payload) {
   const items = loadJson(filePath);
   items.push(payload);
   fs.writeFileSync(filePath, JSON.stringify(items, null, 2));
+}
+
+function writeJson(filePath, payload) {
+  fs.writeFileSync(filePath, JSON.stringify(payload, null, 2));
+}
+
+function isBanned(socket) {
+  const bans = loadJson(BANS_FILE);
+  const ip = socketAddress(socket);
+  return bans.some(b => b.ip === ip);
 }
 
 function nowIso() {
@@ -234,6 +246,8 @@ function pairUsers(socket, partner) {
   socket.partnerId = partner.id;
   partner.partnerId = socket.id;
 
+  totalMatches++;
+
   roomState.set(roomId, {
     id: roomId,
     createdAt,
@@ -302,10 +316,45 @@ app.get("/health", (_req, res) => {
 
 app.get("/stats", (_req, res) => {
   res.json({
+    activeUsers: io.engine.clientsCount,
+    totalMatches,
     waitingUsers: waitingUsers.length,
     activeRooms: roomState.size,
     allowedOrigins,
   });
+});
+
+app.get("/reports", (_req, res) => {
+  res.json(loadJson(REPORTS_FILE).reverse());
+});
+
+app.post("/reports/:id/action", (req, res) => {
+  const { id } = req.params;
+  const { action } = req.body;
+  let reports = loadJson(REPORTS_FILE);
+  const reportIndex = reports.findIndex(r => r.id === id);
+  if (reportIndex !== -1) {
+    reports[reportIndex].status = action;
+    writeJson(REPORTS_FILE, reports);
+    if (action === "Banned" && reports[reportIndex].reportedIp) {
+      appendJson(BANS_FILE, { ip: reports[reportIndex].reportedIp, reason: reports[reportIndex].reason, bannedAt: nowIso() });
+    }
+    res.json({ success: true });
+  } else {
+    res.status(404).json({ error: "Report not found" });
+  }
+});
+
+app.get("/bans", (_req, res) => {
+  res.json(loadJson(BANS_FILE).reverse());
+});
+
+app.post("/bans/unban", (req, res) => {
+  const { ip } = req.body;
+  let bans = loadJson(BANS_FILE);
+  bans = bans.filter(b => b.ip !== ip);
+  writeJson(BANS_FILE, bans);
+  res.json({ success: true });
 });
 
 io.on("connection", (socket) => {
@@ -318,6 +367,10 @@ io.on("connection", (socket) => {
 
   socket.on("find_match", (rawUserData = {}) => {
     try {
+      if (isBanned(socket)) {
+        throw new Error("You have been banned from Puyatan.GG for violating our community guidelines.");
+      }
+      
       const userData = sanitizeProfile(rawUserData);
       resetSession(socket);
       socket.userData = userData;
@@ -374,6 +427,17 @@ io.on("connection", (socket) => {
       socket.to(state.id).emit("receive_message", body);
     } catch (error) {
       socket.emit("app_error", { message: error.message || "Message failed to send." });
+    }
+  });
+
+  socket.on("send_action", (payload = {}) => {
+    try {
+      const state = ensureCanChat(socket);
+      // Rate limiting intentionally removed for actions to allow rapid drawing coordinates.
+      // Directly broadcast action payload (audio, draw, game)
+      socket.to(state.id).emit("receive_action", payload);
+    } catch (error) {
+      // Fails silently for non-critical interactive elements
     }
   });
 
@@ -438,20 +502,37 @@ io.on("connection", (socket) => {
       const state = ensureCanChat(socket);
       const reason = normalizeText(payload.reason || "Reported by user").slice(0, 200);
       const partnerId = state.members.find((memberId) => memberId !== socket.id) || null;
+      let reportedIp = null;
+      if (partnerId && state.participantMeta[partnerId]) {
+        reportedIp = state.participantMeta[partnerId].ip;
+      }
 
-      appendJson(REPORTS_FILE, {
+      const reportObj = {
+        id: crypto.randomUUID(),
         roomId: state.id,
         reporterSocketId: socket.id,
         reportedSocketId: partnerId,
         reporterIp: socketAddress(socket),
+        reportedIp,
         reason,
+        status: "pending",
         createdAt: nowIso(),
-      });
+      };
+
+      appendJson(REPORTS_FILE, reportObj);
+      io.to("admin").emit("admin_new_report", reportObj);
 
       closeRoom(socket, "reported", true);
       socket.emit("report_submitted", { ok: true });
     } catch (error) {
       socket.emit("app_error", { message: error.message || "Could not submit report." });
+    }
+  });
+
+  socket.on("admin_login", (pwd) => {
+    if (pwd === "admin123") {
+      socket.join("admin");
+      socket.emit("admin_auth", { success: true });
     }
   });
 

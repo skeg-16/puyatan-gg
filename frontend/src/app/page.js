@@ -5,6 +5,9 @@ import io from "socket.io-client";
 import * as htmlToImage from 'html-to-image';
 import { supabase } from "@/lib/supabase";
 import OnboardingPanel from "@/app/components/OnboardingPanel";
+import { AdsterraNative, Adsterra300x250, Adsterra320x50 } from "./components/AdsterraAds";
+import NeonCanvas from "./components/NeonCanvas";
+import GameCard from "./components/GameCard";
 
 const socket = io(process.env.NEXT_PUBLIC_BACKEND_URL);
 const badWords = ["bobo","tanga","gago","puta","amputa","shit","fuck","inamo","nudes","kantot","jakol","titi","puke"];
@@ -13,14 +16,21 @@ const THEME_STORAGE_KEY = "puyatan-theme";
 // 1. EXPANDED UNIVERSITIES (Dropdown Data)
 const universities = [
   { id: "NONE",  name: "Tambay Lang / Iba",               color: "#6B7280" },
+  { id: "AdDU",  name: "Ateneo de Davao University",      color: "#3B82F6" },
   { id: "ADMU",  name: "Ateneo de Manila University",     color: "#3B82F6" },
+  { id: "AdZU",  name: "Ateneo de Zamboanga University",  color: "#3B82F6" },
   { id: "AdU",   name: "Adamson University",              color: "#0369A1" },
   { id: "AU",    name: "Arellano University",             color: "#3B82F6" },
   { id: "BSU",   name: "Batangas State University",       color: "#EF4444" },
+  { id: "BU",    name: "Bicol University",                color: "#F97316" },
   { id: "BULSU", name: "Bulacan State University",        color: "#F59E0B" },
   { id: "CAVSU", name: "Cavite State University",         color: "#22C55E" },
   { id: "CEU",   name: "Centro Escolar University",       color: "#EC4899" },
+  { id: "CLSU",  name: "Central Luzon State University",  color: "#16A34A" },
   { id: "CSB",   name: "De La Salle-College of Saint Benilde", color: "#22C55E" },
+  { id: "CSJL",  name: "Colegio de San Juan de Letran",   color: "#1D4ED8" },
+  { id: "CTU",   name: "Cebu Technological University",   color: "#F59E0B" },
+  { id: "DLSMHSI",name: "De La Salle Medical and Health Sciences", color: "#22C55E" },
   { id: "DLSU",  name: "De La Salle University",          color: "#22C55E" },
   { id: "EARIST",name: "Eulogio 'Amang' Rodriguez IST",   color: "#EF4444" },
   { id: "FEU",   name: "Far Eastern University",          color: "#14B8A6" },
@@ -30,14 +40,18 @@ const universities = [
   { id: "MAPUA", name: "Mapúa University",                color: "#B91C1C" },
   { id: "MMSU",  name: "Mariano Marcos State Univ",       color: "#16A34A" },
   { id: "MSU",   name: "Mindanao State University",       color: "#8B5CF6" },
+  { id: "MSU-IIT",name: "MSU - Iligan Institute of Technology", color: "#8B5CF6" },
   { id: "NEUST", name: "Nueva Ecija UST",                 color: "#F59E0B" },
   { id: "NU",    name: "National University",             color: "#3B82F6" },
+  { id: "OLFU",  name: "Our Lady of Fatima University",   color: "#22C55E" },
   { id: "PLM",   name: "Pamantasan ng Lungsod ng Maynila",color: "#EF4444" },
   { id: "PNU",   name: "Philippine Normal University",    color: "#22C55E" },
   { id: "PUP",   name: "Polytechnic University of the PH",color: "#8B5CF6" },
   { id: "RTU",   name: "Rizal Technological University",  color: "#3B82F6" },
   { id: "SBU",   name: "San Beda University",             color: "#DC2626" },
   { id: "SLU",   name: "Saint Louis University",          color: "#0369A1" },
+  { id: "SSC-R", name: "San Sebastian College – Recoletos",color: "#DC2626" },
+  { id: "SU",    name: "Silliman University",             color: "#EF4444" },
   { id: "TIP",   name: "Technological Institute of the PH",color: "#F59E0B" },
   { id: "TSU",   name: "Tarlac State University",         color: "#B91C1C" },
   { id: "TUP",   name: "Technological University of the PH",color: "#EF4444" },
@@ -46,9 +60,11 @@ const universities = [
   { id: "UE",    name: "University of the East",          color: "#EF4444" },
   { id: "UM",    name: "University of Mindanao",          color: "#DC2626" },
   { id: "UP",    name: "University of the Philippines",   color: "#F97316" },
+  { id: "USA",   name: "University of San Agustin",       color: "#F59E0B" },
   { id: "USC",   name: "University of San Carlos",        color: "#16A34A" },
   { id: "USJR",  name: "Univ. of San Jose-Recoletos",     color: "#F59E0B" },
   { id: "UST",   name: "University of Santo Tomas",       color: "#EAB308" },
+  { id: "WVSU",  name: "West Visayas State University",   color: "#3B82F6" },
   { id: "XU",    name: "Xavier University - Ateneo de CDO",color: "#3B82F6" },
 ];
 
@@ -75,6 +91,13 @@ const icebreakers = [
   "Kwento mo yung pinaka-sabaw moment mo today.",
 ];
 
+const wyrQuestions = [
+  { q: "Would you rather have 1 million pesos now or go back 5 years in time?", a: "1 Million Pesos", b: "Go back 5 years" },
+  { q: "Would you rather find true love or have unlimited wealth?", a: "True Love", b: "Unlimited Wealth" },
+  { q: "Would you rather know when you die or how you die?", a: "When I die", b: "How I die" },
+  { q: "Would you rather give up music or give up movies/TV forever?", a: "Give up Music", b: "Give up Movies/TV" },
+];
+
 /* ── ADBANNER COMPONENT (ADSTERRA) ── */
 
 /* ─────────────────────────────────────────────────────────── */
@@ -95,6 +118,7 @@ export default function Home() {
   const [selectedMood,setSelectedMood]= useState(vibes[0].id);
   const [selectedTags,setSelectedTags]= useState([]);
   const [customTag,   setCustomTag]   = useState(""); 
+  const [customUniv,  setCustomUniv]  = useState("");
   const [agreed,      setAgreed]      = useState(false);
   const [room,        setRoom]        = useState(null);
   const [strangerInfo,setStrangerInfo]= useState(null);
@@ -105,16 +129,43 @@ export default function Home() {
   const [floatingEmojis,setFloatingEmojis]= useState([]);
   const [isSpoilerMode, setIsSpoilerMode] = useState(false);
   const [messageCount,  setMessageCount]  = useState(0);
-
-  // ... (tuloy-tuloy na yung ibang variables at logic mo sa baba)
+  const [isPuyatMode, setIsPuyatMode] = useState(false);
+  const [showCanvas, setShowCanvas] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
 
   const chatEndRef       = useRef(null);
   const typingTimeoutRef = useRef(null);
   const chatContainerRef = useRef(null);
   const sponsorTimeoutRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const isRecordingAttemptRef = useRef(false);
+
+  const [showSkipConfirm, setShowSkipConfirm] = useState(false);
+  const [stats, setStats] = useState({ activeUsers: 0 });
+  const [mounted, setMounted] = useState(false);
 
   const isDark = theme === "dark";
   const isOnboarding = status === "intro" || status === "landing";
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/stats`);
+        const data = await res.json();
+        setStats({ activeUsers: data.activeUsers || 0 });
+      } catch (err) {}
+    };
+    fetchStats();
+    const int = setInterval(fetchStats, 5000);
+    return () => clearInterval(int);
+  }, []);
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    setIsPuyatMode(hour >= 0 && hour < 5);
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
@@ -192,13 +243,16 @@ export default function Home() {
     socket.on("queue_left", onQueueLeft);
     socket.on("waiting_for_match",   () => setStatus("searching"));
     socket.on("match_found",         (d) => {
-      setStatus("connected"); setRoom(d.room); setStrangerAfk(false); setMessageCount(0); setServerNotice("");
+      setStatus("connected"); setRoom(d.room); setStrangerAfk(false); setMessageCount(0); setServerNotice(""); setShowCanvas(false); setIsRecording(false);
       setChatBox([{ text: "Nakahanap ka na ng ka-puyatan. Wag torpe, mag-hi ka na!", type: "system" }]);
     });
     socket.on("stranger_info",       (i)  => setStrangerInfo(i));
     socket.on("receive_message",     (d)  => {
       setIsTyping(false); setStrangerAfk(false); setMessageCount(p => p + 1);
       setChatBox(p => [...p, { text: d.message, type: "stranger", isSpoiler: d.isSpoiler }]);
+      if (document.hidden && "Notification" in window && Notification.permission === "granted") {
+        new Notification("Puyatan.GG", { body: "May bagong message ang kausap mo!" });
+      }
     });
     socket.on("stranger_typing",     ()   => {
       setIsTyping(true); clearTimeout(typingTimeoutRef.current);
@@ -206,12 +260,26 @@ export default function Home() {
     });
     socket.on("stranger_afk",        (v)  => setStrangerAfk(v));
     socket.on("receive_reaction",    (d)  => triggerFloatingEmoji(d.emoji));
-    socket.on("stranger_disconnected",()  => { setIsTyping(false); setStrangerAfk(false); setStatus("rating"); setRoom(null); });
+    socket.on("stranger_disconnected",()  => { setIsTyping(false); setStrangerAfk(false); setStatus("rating"); setRoom(null); setShowCanvas(false); setIsRecording(false); });
+    socket.on("receive_action", (payload) => {
+      if (payload.type === "draw" || payload.type === "draw_clear") {
+        setShowCanvas(true);
+      } else if (payload.type === "audio") {
+        setChatBox(p => [...p, { type: "stranger_audio", data: payload.data }]);
+      } else if (payload.type === "game_card") {
+        setChatBox(p => [...p, { type: "game", ...payload.data, myVote: null, theirVote: null }]);
+      } else if (payload.type === "game_vote") {
+        const { messageId, vote } = payload.data;
+        setChatBox(p => p.map(msg => 
+          (msg.type === "game" && msg.messageId === messageId) ? { ...msg, theirVote: vote } : msg
+        ));
+      }
+    });
     
     return () => {
       ["connect","disconnect","connect_error","app_error","report_submitted","queue_left",
        "waiting_for_match","match_found","stranger_info","receive_message",
-       "stranger_typing","stranger_afk","receive_reaction","stranger_disconnected"]
+       "stranger_typing","stranger_afk","receive_reaction","stranger_disconnected", "receive_action"]
         .forEach(e => socket.off(e));
     };
   }, []);
@@ -238,11 +306,16 @@ const handleStart = () => {
     if (badWords.some(w => nickname.toLowerCase().includes(w))) return setNickError("Bawal ang bastos na pangalan dito. Iba na lang.");
     if (!agreed) return setNickError("I-check mo muna yung terms sa baba.");
     
+    if ("Notification" in window && Notification.permission !== "denied") {
+      Notification.requestPermission();
+    }
+
     setNickError(""); 
     setServerNotice("");
     setChatBox([]);
     setStatus("searching"); // ETO YUNG NAWAWALA KANINA!
-    socket.emit("find_match", { nickname, univ: selectedUniv, mood: selectedMood, tags: selectedTags });
+    const finalUniv = selectedUniv === "NONE" && customUniv.trim() ? `Iba (${customUniv.trim()})` : selectedUniv;
+    socket.emit("find_match", { nickname, univ: finalUniv, mood: selectedMood, tags: selectedTags });
   };
   
   const skipChat = () => {
@@ -250,6 +323,8 @@ const handleStart = () => {
     socket.connect();
     setStatus("rating");
     setRoom(null);
+    setShowCanvas(false);
+    setIsRecording(false);
   };
 
   const exitToMenu = () => {
@@ -263,12 +338,15 @@ const handleStart = () => {
     setStrangerInfo(null); 
     setChatBox([]);
     setServerNotice("");
+    setShowCanvas(false);
+    setIsRecording(false);
   };
 
   const submitRating = (rating) => {
     socket.emit("submit_rating", { rating });
     setStatus("searching"); setChatBox([]); setRoom(null); setStrangerInfo(null);
-    setTimeout(() => socket.emit("find_match", { nickname, univ: selectedUniv, mood: selectedMood, tags: selectedTags }), 500);
+    const finalUniv = selectedUniv === "NONE" && customUniv.trim() ? `Iba (${customUniv.trim()})` : selectedUniv;
+    setTimeout(() => socket.emit("find_match", { nickname, univ: finalUniv, mood: selectedMood, tags: selectedTags }), 500);
   };
 
   const sendMessage = () => {
@@ -283,31 +361,77 @@ const handleStart = () => {
   const handleTyping = (e) => { setMessage(e.target.value); if (room) socket.emit("typing", { room }); };
   const sendIcebreaker = () => setMessage(icebreakers[Math.floor(Math.random() * icebreakers.length)]);
 
+  const startRecording = async () => {
+    isRecordingAttemptRef.current = true;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (!isRecordingAttemptRef.current) {
+        // User let go before permissions resolved
+        stream.getTracks().forEach(t => t.stop());
+        return;
+      }
+
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = () => {
+          const base64Audio = reader.result;
+          socket.emit("send_action", { type: "audio", room, data: base64Audio });
+          setChatBox(p => [...p, { type: "me_audio", data: base64Audio }]);
+        };
+        stream.getTracks().forEach(t => t.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Mic access denied", err);
+      setServerNotice("Microphone access denied. Please allow permissions.");
+    }
+  };
+
+  const stopRecording = () => {
+    isRecordingAttemptRef.current = false;
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const sendGameCard = () => {
+    const q = wyrQuestions[Math.floor(Math.random() * wyrQuestions.length)];
+    const messageId = Date.now().toString();
+    const gameData = { messageId, question: q.q, optionA: q.a, optionB: q.b };
+    
+    setChatBox(p => [...p, { type: "game", ...gameData, myVote: null, theirVote: null }]);
+    socket.emit("send_action", { type: "game_card", room, data: gameData });
+  };
+
+  const handleGameVote = (messageId, vote) => {
+    setChatBox(p => p.map(msg => 
+      (msg.type === "game" && msg.messageId === messageId) ? { ...msg, myVote: vote } : msg
+    ));
+    socket.emit("send_action", { type: "game_vote", room, data: { messageId, vote } });
+  };
+
 const handleReportStranger = async () => {
     if (!room) return;
-
-    // 1. I-save agad sa Supabase Database (Tahimik lang sa background)
-    const { error } = await supabase.from('reports').insert([
-      {
-        reported_user: "Stranger (ID: " + room.slice(0, 5) + ")", 
-        reporter: "Anonymous User", 
-        reason: "Inappropriate behavior (Reported via UI)",
-        room_id: room,
-        status: "Pending"
-      }
-    ]);
-
-    if (error) {
-      console.error("Error saving report:", error);
-      // Kahit mag-error ang database, itutuloy pa rin natin ang pag-disconnect para safe ang user
+    if (!window.confirm("Are you sure you want to report this user? This will instantly end the chat.")) return;
+    const reason = prompt("Bakit mo irereport tong user na to? (e.g., Bastos, spam, etc.)");
+    if (reason) {
+      socket.emit("report_user", { room, reason });
+      alert("Report submitted! The moderation team will review this. Skipping chat for your safety.");
+      skipChat();
     }
-
-    // 2. I-disconnect sa chat at ilipat sa next screen
-    socket.emit("report_user", { room, reason: "Reported from chat UI." });
-    
-    if (typeof setServerNotice === 'function') setServerNotice("Naka-submit na ang report. Salamat boss!");
-    if (typeof setStatus === 'function') setStatus("rating"); 
-    if (typeof setRoom === 'function') setRoom(null);
   };
 
   const exportChat = async () => {
@@ -330,17 +454,20 @@ const handleReportStranger = async () => {
 
   /* ── Design tokens ── */
   const D = {
-    pageBg:    isDark ? "#030008"                     : "#DCF0F8",
-    blob1:     isDark ? "#6D28D9"                     : "#0EA5E9",
-    blob2:     isDark ? "#9D174D"                     : "#14B8A6",
-    blob3:     isDark ? "#0E7490"                     : "#6366F1",
+    pageBg:    isPuyatMode ? "#020005" : (isDark ? "#030008" : "#DCF0F8"),
+    blob1:     isPuyatMode ? "#4C1D95" : (isDark ? "#6D28D9" : "#0EA5E9"),
+    blob2:     isPuyatMode ? "#831843" : (isDark ? "#9D174D" : "#14B8A6"),
+    blob3:     isPuyatMode ? "#083344" : (isDark ? "#0E7490" : "#6366F1"),
     cardBg:    isDark ? "rgba(255,255,255,0.04)"      : "rgba(255,255,255,0.55)",
     cardBdr:   isDark ? "rgba(255,255,255,0.09)"      : "rgba(255,255,255,0.75)",
     cardShadow:isDark ? "0 0 0 1px rgba(109,40,217,0.12), 0 32px 80px rgba(3,0,8,0.9), inset 0 1px 0 rgba(255,255,255,0.07)"
                       : "0 32px 80px rgba(14,165,233,0.12), inset 0 1px 0 rgba(255,255,255,0.9)",
-    panelBg:   isDark ? "rgba(255,255,255,0.04)"      : "rgba(255,255,255,0.65)",
-    panelBdr:  isDark ? "rgba(255,255,255,0.08)"      : "rgba(255,255,255,0.8)",
-    panelShadow: isDark ? "inset 0 1px 0 rgba(255,255,255,0.07)" : "inset 0 1px 0 rgba(255,255,255,0.95), 0 2px 12px rgba(14,165,233,0.06)",
+    
+    // Glassmorphism updates
+    panelBg:   isDark ? "rgba(30, 10, 20, 0.4)"       : "rgba(255, 255, 255, 0.7)",
+    panelBdr:  isDark ? "rgba(255, 255, 255, 0.08)"   : "rgba(255, 255, 255, 0.8)",
+    panelShadow: isDark ? "0 8px 32px 0 rgba(0, 0, 0, 0.37)" : "0 8px 32px 0 rgba(0, 0, 0, 0.05)",
+    
     inputBg:   isDark ? "rgba(255,255,255,0.06)"      : "rgba(255,255,255,0.85)",
     inputBdr:  isDark ? "rgba(255,255,255,0.1)"       : "rgba(14,165,233,0.2)",
     inputClr:  isDark ? "#EDE9FE"                     : "#0C4A6E",
@@ -370,19 +497,28 @@ const handleReportStranger = async () => {
     labelClr:  isDark ? "rgba(196,181,253,0.5)" : "rgba(12,74,110,0.45)",
   };
 
-  const panel = (wm) => ({
-    position: "relative", padding: "16px", borderRadius: "18px", overflow: "hidden",
-    background: D.panelBg, border: `1px solid ${D.panelBdr}`, boxShadow: D.panelShadow,
-    transition: "box-shadow 0.2s",
-    _wm: wm,
+  /* ── UI HELPERS ── */
+  const panel = (num) => ({
+    background: D.panelBg,
+    borderRadius: "20px",
+    padding: "24px",
+    border: `1px solid ${D.panelBdr}`,
+    position: "relative",
+    overflow: "hidden",
+    boxShadow: D.panelShadow,
+    backdropFilter: "blur(16px)",
+    WebkitBackdropFilter: "blur(16px)"
   });
 
-  const lbl = { fontSize: "9px", fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", color: D.labelClr, display: "block", marginBottom: "10px" };
+  const lbl = { fontSize: "9px", fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", color: D.textMut, display: "block", marginBottom: "10px" };
   const iconBtn = { background: D.iconBtnBg, border: `1px solid ${D.iconBtnBdr}`, color: D.iconBtnClr, borderRadius: "12px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" };
+
+  if (!mounted) return null;
 
 return (
     <div
-      style={{ height: "100dvh", width: "100vw", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "8px", position: "relative", overflow: "hidden", background: D.pageBg, fontFamily: "'Figtree', sans-serif", transition: "background 0.6s", boxSizing: "border-box" }}
+      className="p-0 sm:p-2 h-[100dvh] w-[100vw] flex flex-col items-center justify-center relative overflow-hidden box-border"
+      style={{ background: D.pageBg, fontFamily: "'Figtree', sans-serif", transition: "background 0.6s" }}
     >
       {/* ── AURORA BACKGROUND BLOBS ── */}
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0 }}>
@@ -407,25 +543,40 @@ return (
         <div key={e.id} style={{ position: "fixed", bottom: "130px", right: "60px", fontSize: "3rem", pointerEvents: "none", zIndex: 50, animation: "floatUp 2.2s ease-out forwards" }}>{e.emoji}</div>
       ))}
 
-      {/* ── TOP AD BANNER (Google AdSense Placeholder) ── */}
-      {!isOnboarding && (
-      <div style={{ width: "100%", maxWidth: "920px", height: "90px", marginBottom: "10px", borderRadius: "14px", border: `1px dashed ${isDark ? "rgba(255,255,255,0.15)" : "rgba(14,165,233,0.25)"}`, display: "none", alignItems: "center", justifyContent: "center", zIndex: 10, fontSize: "10px", fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: D.textMut, background: isDark ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.4)" }} className="banner-ad">
-        [ Google AdSense Space - 728x90 ]
-      </div>
-      )}
-
-      {serverNotice && !isOnboarding && (
+      {/* ── ONBOARDING AESTHETICS (TICKER & BACKGROUND EMOJIS) ── */}
+      {isOnboarding && (
+        <>
+          <div className="absolute top-6 left-0 right-0 flex justify-center z-[40] pointer-events-none">
+            <div className="bg-pink-500/20 border border-pink-500/30 backdrop-blur-md px-5 py-2 rounded-full text-[11px] sm:text-xs font-bold text-pink-200 shadow-[0_0_15px_rgba(236,72,153,0.3)] flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-pink-400 animate-pulse"></span>
+              🔥 {stats.activeUsers * 3 + 1240} students are currently puyat!
+            </div>
+          </div>
+          
+          <div className="absolute inset-0 pointer-events-none overflow-hidden z-[5]">
+            {['🔥','👀','🥀','🎧','🎮','💔','✨','🌙'].map((emoji, i) => (
+              <div key={i} className="absolute text-4xl sm:text-5xl opacity-10 sm:opacity-20 drop-shadow-2xl" style={{
+                left: `${10 + (i * 11)}%`,
+                bottom: "-10%",
+                animation: `floatUp ${12 + i * 2}s linear infinite`,
+                animationDelay: `${i * 1.5}s`
+              }}>
+                {emoji}
+              </div>
+            ))}
+          </div>
+        </>
+      )}      {serverNotice && !isOnboarding && (
         <div style={{ width: "100%", maxWidth: "920px", marginBottom: "10px", padding: "10px 14px", borderRadius: "14px", border: `1px solid ${isDark ? "rgba(244,114,182,0.22)" : "rgba(2,132,199,0.18)"}`, background: isDark ? "rgba(244,114,182,0.08)" : "rgba(2,132,199,0.08)", color: isDark ? "#FBCFE8" : "#075985", fontSize: "11px", fontWeight: 700, zIndex: 10 }}>
           {serverNotice}
         </div>
       )}
 
       <div
-        style={{ width: "100%", maxWidth: isOnboarding ? "1100px" : "920px", borderRadius: "28px",
-        background: D.cardBg, backdropFilter: "blur(28px)", WebkitBackdropFilter:
-        "blur(28px)", border: `1px solid ${D.cardBdr}`, boxShadow: D.cardShadow, display:
-        "flex", flexDirection: "row", flex: 1, minHeight: 0, maxHeight: isOnboarding ? "820px" : "760px", zIndex: 10, overflow:
-        "hidden", transition: "all 0.6s" }}
+        className={`w-full flex-1 flex flex-col md:flex-row min-h-0 z-10 overflow-hidden transition-all duration-600 rounded-none sm:rounded-[28px] ${isOnboarding ? "sm:max-w-[1100px] sm:max-h-[820px]" : "sm:max-w-[920px] sm:max-h-[760px]"}`}
+        style={{
+          background: D.cardBg, backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)", border: `1px solid ${D.cardBdr}`, boxShadow: D.cardShadow,
+        }}
       >
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
         {(status === "intro" || status === "landing") && (
@@ -444,6 +595,8 @@ return (
             toggleTag={toggleTag}
             customTag={customTag}
             setCustomTag={setCustomTag}
+            customUniv={customUniv}
+            setCustomUniv={setCustomUniv}
             handleAddCustomTag={handleAddCustomTag}
             agreed={agreed}
             setAgreed={setAgreed}
@@ -713,6 +866,8 @@ return (
                 <h2 style={{ margin: "0 0 6px", fontFamily: "'Bebas Neue',sans-serif", fontSize: "2.2rem", letterSpacing: "0.1em", color: D.textPri }}>NAGHAHANAP…</h2>
                 <p style={{ margin: 0, fontSize: "12px", color: D.textMut, fontWeight: 600 }}>Hinahanap ang ka-puyatan mo ngayong gabi.</p>
               </div>
+
+              <Adsterra300x250 />
               
               <button onClick={exitToMenu} style={{ marginTop: "10px", background: "none", border: "none", fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: D.textMut, cursor: "pointer", textDecoration: "underline", textUnderlineOffset: "3px" }}>
                 Cancel Search
@@ -727,7 +882,7 @@ return (
               <h2 style={{ margin: "0 0 6px", fontFamily: "'Bebas Neue',sans-serif", fontSize: "2rem", letterSpacing: "0.1em", color: D.textPri }}>VIBE CHECK</h2>
               <p style={{ margin: "0 0 24px", fontSize: "12px", color: D.textMut, fontWeight: 600 }}>Paano mo i-ra-rate ang huli mong kausap?</p>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", width: "100%", maxWidth: "300px", marginBottom: "16px" }}>
+              <div className="grid grid-cols-2 gap-[10px] w-full max-w-[300px] mb-[16px]">
                 {[
                   { label: "🔥 W Kausap", val: "W Kausap", c: "#22C55E" },
                   { label: "🥀 Sabaw",    val: "Sabaw",    c: "#F59E0B" },
@@ -754,8 +909,8 @@ return (
               </div>
             </div>
           )}
-
-          {/* ════════════════════ STATE: CONNECTED ════════════════════ */}
+        
+        {/* ════════════════════ STATE: CONNECTED ════════════════════ */}
           {status === "connected" && (
             <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }} ref={chatContainerRef}>
 
@@ -779,15 +934,20 @@ return (
                   </div>
                 </div>
                 
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <button onClick={exitToMenu} title="Main Menu" style={{ ...iconBtn, width: "36px", height: "36px", fontSize: "14px" }}
-                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.1)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>🚪</button>
-                  <button onClick={exportChat} title="Screenshot" style={{ ...iconBtn, width: "36px", height: "36px" }}
-                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.1)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>📸</button>
-                  <button onClick={handleReportStranger} title="Report User" style={{ ...iconBtn, width: "36px", height: "36px", fontSize: "14px", color: isDark ? "#FCA5A5" : "#DC2626", border: `1px solid ${isDark ? "rgba(248,113,113,0.35)" : "rgba(220,38,38,0.28)"}` }}
-                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.1)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>🚩</button>
-                  <button onClick={skipChat} style={{ ...iconBtn, padding: "0 14px", height: "36px", fontSize: "12px", fontWeight: 800, letterSpacing: "0.05em" }}
-                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>⏭ Skip</button>
+                {/* ACTION BUTTONS */}
+                <div className="flex gap-2 shrink-0">
+                  <button onClick={exitToMenu} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-bold text-white/80 transition-colors">
+                    🚪 <span className="hidden sm:inline">Leave</span>
+                  </button>
+                  <button onClick={exportChat} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-bold text-white/80 transition-colors">
+                    📸 <span className="hidden sm:inline">Save</span>
+                  </button>
+                  <button onClick={handleReportStranger} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-xs font-bold text-red-400 transition-colors">
+                    ⚠️ <span className="hidden sm:inline">Report</span>
+                  </button>
+                  <button onClick={() => setShowSkipConfirm(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-pink-500/20 hover:bg-pink-500/40 text-xs font-bold text-pink-200 transition-colors">
+                    ⏭ Next
+                  </button>
                 </div>
               </div>
 
@@ -798,19 +958,33 @@ return (
                 </div>
               )}
 
+              {/* IN-CHAT AD BANNER */}
+              <div className="flex justify-center mt-3 px-2 shrink-0">
+                <Adsterra320x50 />
+              </div>
+
               {/* MESSAGES */}
               <div style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: "10px" }} className="chat-scroll">
                 {chatBox.map((msg, i) => {
                   if (msg.type === "system") return (
                     <div key={i} style={{ alignSelf: "center", fontSize: "9px", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: D.textMut, background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)", border: `1px solid ${D.panelBdr}`, padding: "5px 14px", borderRadius: "999px" }}>{msg.text}</div>
                   );
-                  const isMe = msg.type === "me";
+                  if (msg.type === "game") return (
+                    <div key={i} style={{ alignSelf: "center", animation: "fadeSlideUp 0.25s ease-out" }}>
+                      <GameCard {...msg} socket={socket} room={room} isDark={isDark} onVote={handleGameVote} />
+                    </div>
+                  );
+                  const isMe = msg.type.startsWith("me");
                   return (
                     <div key={i}
-                      onClick={e => e.currentTarget.style.filter = "none"}
+                      onClick={e => msg.isSpoiler && (e.currentTarget.style.filter = "none")}
                       style={{ maxWidth: "72%", padding: "11px 15px", borderRadius: isMe ? "18px 18px 4px 18px" : "18px 18px 18px 4px", fontSize: "13px", fontWeight: 500, lineHeight: 1.55, alignSelf: isMe ? "flex-end" : "flex-start", transition: "all 0.2s", animation: "fadeSlideUp 0.25s ease-out", filter: msg.isSpoiler ? "blur(6px)" : "none", cursor: msg.isSpoiler ? "pointer" : "default", background: isMe ? D.bubbleMe : D.bubbleThem, border: isMe ? "none" : `1px solid ${D.bubbleThemBdr}`, color: isMe ? "#fff" : D.textPri, backdropFilter: isMe ? "none" : "blur(8px)", WebkitBackdropFilter: isMe ? "none" : "blur(8px)", boxShadow: isMe ? (isDark ? "0 4px 20px rgba(124,58,237,0.3)" : "0 4px 20px rgba(2,132,199,0.25)") : "none" }}
                     >
-                      {msg.text}
+                      {msg.type.includes("audio") ? (
+                        <audio src={msg.data} controls style={{ height: "30px", width: "100%", minWidth: "180px", maxWidth: "240px", outline: "none" }} />
+                      ) : (
+                        msg.text
+                      )}
                     </div>
                   );
                 })}
@@ -820,6 +994,11 @@ return (
                   </div>
                 )}
                 <div ref={chatEndRef} />
+              </div>
+
+              {/* NEON CANVAS (Pop-up) - Always mounted to sync, hidden via CSS */}
+              <div className="w-full px-2 mt-2 mb-[-6px] z-10" style={{ display: showCanvas ? "flex" : "none", justifyContent: "center", animation: "fadeSlideUp 0.2s ease-out" }}>
+                <NeonCanvas socket={socket} room={room} isDark={isDark} />
               </div>
 
               {/* INPUT BAR */}
@@ -839,13 +1018,28 @@ return (
                     <span style={{ fontSize: "9px", fontWeight: 900, letterSpacing: "0.12em", textTransform: "uppercase", color: isDark ? "#F472B6" : "#BE185D", animation: "pulse 1.4s infinite" }}>🔒 SPOILER ON</span>
                   )}
                 </div>
-                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
                   <button onClick={sendIcebreaker} title="Random Icebreaker"
-                    style={{ ...iconBtn, width: "40px", height: "40px", fontSize: "16px", flexShrink: 0 }}
-                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.1) rotate(-10deg)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1) rotate(0deg)"}>🎲</button>
+                    style={{ ...iconBtn, padding: "0 10px", height: "36px", fontSize: "12px", fontWeight: 700, gap: "6px", flexShrink: 0 }}
+                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
+                    <span style={{ fontSize: "16px" }}>🎲</span> <span className="hidden sm:inline">Icebreaker</span>
+                  </button>
+                  <button onClick={sendGameCard} title="Would You Rather"
+                    style={{ ...iconBtn, padding: "0 10px", height: "36px", fontSize: "12px", fontWeight: 700, gap: "6px", flexShrink: 0 }}
+                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
+                    <span style={{ fontSize: "16px" }}>🃏</span> <span className="hidden sm:inline">Game</span>
+                  </button>
+                  <button onClick={() => setShowCanvas(!showCanvas)} title="Neon Scratchpad"
+                    style={{ ...iconBtn, padding: "0 10px", height: "36px", fontSize: "12px", fontWeight: 700, gap: "6px", flexShrink: 0, background: showCanvas ? D.accent : D.iconBtnBg, color: showCanvas ? "#fff" : D.iconBtnClr }}
+                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
+                    <span style={{ fontSize: "16px" }}>🎨</span> <span className="hidden sm:inline">Draw</span>
+                  </button>
+
                   <button onClick={() => setIsSpoilerMode(!isSpoilerMode)} title="Spoiler Mode"
-                    style={{ ...iconBtn, width: "40px", height: "40px", fontSize: "16px", flexShrink: 0, background: isSpoilerMode ? (isDark ? "rgba(244,114,182,0.15)" : "rgba(190,24,93,0.1)") : D.iconBtnBg, borderColor: isSpoilerMode ? (isDark ? "rgba(244,114,182,0.5)" : "rgba(190,24,93,0.4)") : D.iconBtnBdr, color: isSpoilerMode ? (isDark ? "#F472B6" : "#BE185D") : D.iconBtnClr }}
-                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.1)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>🔒</button>
+                    style={{ ...iconBtn, padding: "0 10px", height: "36px", fontSize: "12px", fontWeight: 700, gap: "6px", flexShrink: 0, background: isSpoilerMode ? (isDark ? "rgba(244,114,182,0.15)" : "rgba(190,24,93,0.1)") : D.iconBtnBg, borderColor: isSpoilerMode ? (isDark ? "rgba(244,114,182,0.5)" : "rgba(190,24,93,0.4)") : D.iconBtnBdr, color: isSpoilerMode ? (isDark ? "#F472B6" : "#BE185D") : D.iconBtnClr }}
+                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
+                    <span style={{ fontSize: "16px" }}>🔒</span> <span className="hidden sm:inline">Spoiler</span>
+                  </button>
 
                   <input
                     type="text" placeholder="Yap na boss…" value={message}
@@ -855,8 +1049,19 @@ return (
                     onBlur={e  => e.target.style.borderColor = isSpoilerMode ? (isDark ? "rgba(244,114,182,0.5)" : "rgba(190,24,93,0.4)") : D.inputBdr}
                   />
 
+                  <button 
+                    onMouseDown={startRecording} onMouseUp={stopRecording} onMouseLeave={stopRecording} 
+                    onTouchStart={startRecording} onTouchEnd={stopRecording} 
+                    title="Hold to Speak"
+                    style={{ border: "none", width: "44px", height: "44px", borderRadius: "12px", background: isRecording ? "#EF4444" : D.iconBtnBg, color: isRecording ? "#fff" : D.iconBtnClr, fontSize: "20px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, transition: "all 0.15s", animation: isRecording ? "pulse 1s infinite" : "none" }}
+                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+                  >
+                    🎤
+                  </button>
+
                   <button onClick={sendMessage}
-                    style={{ padding: "11px 20px", borderRadius: "12px", border: "none", background: D.accentGrad, color: "#fff", fontFamily: "'Bebas Neue',sans-serif", fontSize: "1rem", letterSpacing: "0.1em", cursor: "pointer", flexShrink: 0, transition: "all 0.15s", boxShadow: isDark ? "0 0 20px rgba(124,58,237,0.35)" : "0 0 16px rgba(2,132,199,0.25)" }}
+                    className="py-2 px-3 sm:py-[11px] sm:px-[20px] rounded-[12px] flex-shrink-0"
+                    style={{ border: "none", background: D.accentGrad, color: "#fff", fontFamily: "'Bebas Neue',sans-serif", fontSize: "1rem", letterSpacing: "0.1em", cursor: "pointer", transition: "all 0.15s", boxShadow: isDark ? "0 0 20px rgba(124,58,237,0.35)" : "0 0 16px rgba(2,132,199,0.25)" }}
                     onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} onMouseDown={e => e.currentTarget.style.transform = "scale(0.97)"} onMouseUp={e => e.currentTarget.style.transform = "scale(1.05)"}>
                     SEND
                   </button>
@@ -866,47 +1071,7 @@ return (
           )}
         </div>
 
-{/* ── AD SIDEBAR (Hybrid Monetization Zone) ── */}
-        {!isOnboarding && (
-        <div style={{ width: "220px", flexShrink: 0, borderLeft: `1px solid ${D.sidebarBdr}`,
-        background: D.sidebarBg, display: "flex", flexDirection: "column", alignItems:
-        "center", padding: "20px 16px", gap: "16px", overflowY: "auto" }}
-        className="sidebar-ad chat-scroll">
-          
-          <span style={{ fontSize: "9px", fontWeight: 900, letterSpacing: "0.22em", textTransform: "uppercase", color: D.textMut }}>Sponsored</span>
 
-          {/* 1. OTTER DIGITALS PROMO */}
-          <div style={{ width: "100%", background: D.panelBg, borderRadius: "14px", border: `1px solid ${D.panelBdr}`, padding: "16px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", boxShadow: D.panelShadow }} onMouseEnter={e => { e.currentTarget.style.borderColor = "#3B82F6"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = D.panelBdr; e.currentTarget.style.transform = "translateY(0)"; }}>
-            <div style={{ fontSize: "2.5rem", marginBottom: "8px" }}>🦦</div>
-            <p style={{ fontSize: "12px", fontWeight: 800, color: D.textPri, margin: "0 0 4px 0" }}>Otter Digitals</p>
-            <p style={{ fontSize: "9px", color: D.textMut, margin: "0 0 12px 0", lineHeight: 1.4 }}>30 plus digital tools for seamless conversions.</p>
-            <a href="https://otter-digitals.vercel.app/" target="_blank" rel="noopener noreferrer" style={{ display: "block", width: "100%", padding: "8px 0", background: "linear-gradient(135deg, #3B82F6, #2563EB)", color: "#fff", border: "none", borderRadius: "8px", fontSize: "11px", fontWeight: 800, textDecoration: "none", boxShadow: "0 4px 12px rgba(59,130,246,0.3)" }}>
-              HIRE US
-            </a>
-          </div>
-
-          {/* 2. AFFILIATE / ADSTERRA DIRECT LINK */}
-          <div style={{ width: "100%", background: D.panelBg, borderRadius: "14px", border: `1px solid ${D.panelBdr}`, padding: "16px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", boxShadow: D.panelShadow }} onMouseEnter={e => { e.currentTarget.style.borderColor = "#F97316"; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = D.panelBdr; e.currentTarget.style.transform = "translateY(0)"; }}>
-            <div style={{ fontSize: "2.5rem", marginBottom: "8px" }}>☕</div>
-            <p style={{ fontSize: "12px", fontWeight: 800, color: D.textPri, margin: "0 0 4px 0" }}>Pampagising Kape</p>
-            <p style={{ fontSize: "9px", color: D.textMut, margin: "0 0 12px 0", lineHeight: 1.4 }}>Para sa madaling araw na puyatan.</p>
-            <a href="https://www.profitablecpmratenetwork.com/wj5k3704g?key=a1e8c914d826c6b3834b15aa0bbba67e" target="_blank" rel="noopener noreferrer" style={{ display: "block", width: "100%", padding: "8px 0", background: "linear-gradient(135deg, #F97316, #EA580C)", color: "#fff", border: "none", borderRadius: "8px", fontSize: "11px", fontWeight: 800, textDecoration: "none", boxShadow: "0 4px 12px rgba(249,115,22,0.3)" }}>
-              BUY ON SHOPEE
-            </a>
-          </div>
-
-          {/* 3. MERCH / ADSTERRA DIRECT LINK */}
-          <div style={{ width: "100%", background: D.panelBg, borderRadius: "14px", border: `1px solid ${D.panelBdr}`, padding: "16px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", boxShadow: D.panelShadow }} onMouseEnter={e => { e.currentTarget.style.borderColor = D.accent; e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = D.panelBdr; e.currentTarget.style.transform = "translateY(0)"; }}>
-            <div style={{ fontSize: "2.5rem", marginBottom: "8px" }}>🛍️</div>
-            <p style={{ fontSize: "12px", fontWeight: 800, color: D.textPri, margin: "0 0 4px 0" }}>Limited Edition Tote</p>
-            <p style={{ fontSize: "14px", fontWeight: 900, color: D.accent, margin: "0 0 12px 0" }}>₱175</p>
-            <a href="https://www.profitablecpmratenetwork.com/wj5k3704g?key=a1e8c914d826c6b3834b15aa0bbba67e" target="_blank" rel="noopener noreferrer" style={{ display: "block", width: "100%", padding: "8px 0", background: D.accentGrad, color: "#fff", border: "none", borderRadius: "8px", fontSize: "11px", fontWeight: 800, textDecoration: "none", boxShadow: D.btnShadow }}>
-              GET YOURS
-            </a>
-          </div>
-
-        </div>
-        )}
       </div>
 
       {/* ── GLOBAL STYLES ── */}
@@ -918,14 +1083,14 @@ return (
 
         /* ── Aurora blobs ── */
         .aurora-blob {
-          position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.4; pointer-events: none;
+          position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.5; pointer-events: none; mix-blend-mode: screen;
         }
-        .b1 { width: 500px; height: 500px; top: -140px; left: -120px; animation: drift1 22s ease-in-out infinite alternate; }
-        .b2 { width: 400px; height: 400px; bottom: -100px; right: -80px; animation: drift2 26s ease-in-out infinite alternate; }
-        .b3 { width: 300px; height: 300px; top: 45%; left: 55%; transform: translate(-50%,-50%); animation: drift3 30s ease-in-out infinite alternate; opacity: 0.25; }
-        @keyframes drift1 { 0%{transform:translate(0,0) scale(1)} 50%{transform:translate(55px,-35px) scale(1.07)} 100%{transform:translate(-25px,45px) scale(0.94)} }
-        @keyframes drift2 { 0%{transform:translate(0,0) scale(1)} 50%{transform:translate(-45px,30px) scale(1.06)} 100%{transform:translate(35px,-40px) scale(0.96)} }
-        @keyframes drift3 { 0%{transform:translate(-50%,-50%) scale(1)} 50%{transform:translate(calc(-50% + 28px),calc(-50% - 20px)) scale(1.12)} 100%{transform:translate(calc(-50% - 18px),calc(-50% + 22px)) scale(0.9)} }
+        .b1 { width: 600px; height: 600px; top: -10%; left: -10%; animation: drift1 22s ease-in-out infinite alternate; background: radial-gradient(circle, rgba(236,72,153,0.3) 0%, transparent 70%); }
+        .b2 { width: 500px; height: 500px; bottom: -10%; right: -10%; animation: drift2 26s ease-in-out infinite alternate; background: radial-gradient(circle, rgba(168,85,247,0.3) 0%, transparent 70%); }
+        .b3 { width: 400px; height: 400px; top: 45%; left: 55%; transform: translate(-50%,-50%); animation: drift3 30s ease-in-out infinite alternate; opacity: 0.35; background: radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%); }
+        @keyframes drift1 { 0%{transform:translate(0,0) scale(1)} 50%{transform:translate(80px,-40px) scale(1.1)} 100%{transform:translate(-40px,60px) scale(0.9)} }
+        @keyframes drift2 { 0%{transform:translate(0,0) scale(1)} 50%{transform:translate(-60px,50px) scale(1.1)} 100%{transform:translate(50px,-50px) scale(0.9)} }
+        @keyframes drift3 { 0%{transform:translate(-50%,-50%) scale(1)} 50%{transform:translate(calc(-50% + 40px),calc(-50% - 30px)) scale(1.15)} 100%{transform:translate(calc(-50% - 30px),calc(-50% + 40px)) scale(0.85)} }
 
         /* ── Animations ── */
         @keyframes spin        { to { transform: rotate(360deg); } }
@@ -934,7 +1099,7 @@ return (
         @keyframes ringPulse   { 0%{transform:scale(0.9);opacity:0.6} 50%{transform:scale(1.08);opacity:0.2} 100%{transform:scale(0.9);opacity:0.6} }
         @keyframes fadeSlideUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
         @keyframes shake       { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} }
-        @keyframes floatUp     { 0%{transform:translateY(0) scale(1) rotate(0deg);opacity:1} 100%{transform:translateY(-220px) scale(2.2) rotate(18deg);opacity:0} }
+        @keyframes floatUp     { 0%{transform:translateY(0) scale(1) rotate(0deg);opacity:1} 100%{transform:translateY(-120vh) scale(1.8) rotate(25deg);opacity:0} }
         @keyframes gradShift   { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
         /* CTA shimmer sweep */

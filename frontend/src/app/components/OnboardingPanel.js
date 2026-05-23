@@ -1,25 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { Adsterra728x90, AdsterraNative } from "./AdsterraAds";
 
-const supportLinks = [
-  {
-    title: "Otter Digitals",
-    subtitle: "Custom websites and systems",
-    href: "https://otter-digitals.vercel.app/",
-    accent: "#3B82F6",
-    cta: "HIRE US",
-    emoji: "OT",
-  },
-  {
-    title: "Pampagising Kape",
-    subtitle: "Late-night survival fuel",
-    href: "https://www.profitablecpmratenetwork.com/wj5k3704g?key=a1e8c914d826c6b3834b15aa0bbba67e",
-    accent: "#F97316",
-    cta: "BUY NOW",
-    emoji: "KP",
-  },
-];
+
 
 const introHighlights = [
   "Anonymous by default",
@@ -42,6 +26,8 @@ export default function OnboardingPanel({
   toggleTag,
   customTag,
   setCustomTag,
+  customUniv,
+  setCustomUniv,
   handleAddCustomTag,
   agreed,
   setAgreed,
@@ -90,35 +76,20 @@ export default function OnboardingPanel({
   if (status === "intro") {
     return (
       <div
-        className="onboarding-shell intro-shell"
-        style={{
-          flex: 1,
-          minHeight: 0,
-          padding: "22px",
-          display: "grid",
-          gap: "18px",
-        }}
+        className="onboarding-shell intro-shell w-full flex-1 min-h-0 p-3 sm:p-4 md:p-[22px] grid gap-[18px]"
       >
         <section
-          className="intro-hero"
+          className="intro-hero grid grid-cols-1 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] gap-[18px]"
           style={{
             ...panelBase,
             padding: "26px",
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 1.2fr) minmax(320px, 0.8fr)",
-            gap: "18px",
             background: isDark
               ? "radial-gradient(circle at top left, rgba(168,85,247,0.28), transparent 30%), radial-gradient(circle at bottom right, rgba(14,165,233,0.18), transparent 28%), linear-gradient(145deg, rgba(20,16,38,0.98), rgba(8,11,24,0.96))"
               : "radial-gradient(circle at top left, rgba(2,132,199,0.16), transparent 28%), radial-gradient(circle at bottom right, rgba(236,72,153,0.14), transparent 24%), linear-gradient(145deg, rgba(255,255,255,0.96), rgba(244,246,255,0.92))",
           }}
         >
           <div
-            style={{
-              display: "grid",
-              gap: "22px",
-              alignContent: "space-between",
-              minHeight: "420px",
-            }}
+            className="flex flex-col justify-center gap-[24px]"
           >
             <div style={{ display: "grid", gap: "16px", alignContent: "start" }}>
               <div
@@ -174,7 +145,7 @@ export default function OnboardingPanel({
               </div>
             </div>
 
-            <div className="intro-highlight-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "10px" }}>
+            <div className="intro-highlight-grid grid grid-cols-1 sm:grid-cols-3 gap-[10px]">
               {introHighlights.map((item) => (
                 <div
                   key={item}
@@ -195,7 +166,7 @@ export default function OnboardingPanel({
             </div>
           </div>
 
-          <div style={{ display: "grid", gap: "14px", alignContent: "space-between" }}>
+          <div className="flex flex-col justify-center gap-[16px]">
             <section
               style={{
                 ...panelBase,
@@ -214,65 +185,8 @@ export default function OnboardingPanel({
               </div>
             </section>
 
-            <div className="intro-support-grid" style={{ display: "grid", gap: "12px" }}>
-              {supportLinks.map((item) => (
-                <a
-                  key={item.title}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    ...panelBase,
-                    padding: "16px",
-                    textDecoration: "none",
-                    color: D.textPri,
-                    display: "grid",
-                    gap: "10px",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <div
-                      style={{
-                        width: "42px",
-                        height: "42px",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        borderRadius: "14px",
-                        background: `${item.accent}22`,
-                        color: item.accent,
-                        fontSize: "12px",
-                        fontWeight: 900,
-                        letterSpacing: "0.08em",
-                        flexShrink: 0,
-                      }}
-                    >
-                      {item.emoji}
-                    </div>
-                    <div style={{ display: "grid", gap: "3px", minWidth: 0 }}>
-                      <strong style={{ fontSize: "0.98rem", lineHeight: 1.2 }}>{item.title}</strong>
-                      <span style={{ fontSize: "12px", color: D.textMut, lineHeight: 1.45 }}>{item.subtitle}</span>
-                    </div>
-                  </div>
-
-                  <span
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      minHeight: "38px",
-                      borderRadius: "12px",
-                      background: `linear-gradient(135deg, ${item.accent}, ${item.accent}CC)`,
-                      color: "#fff",
-                      fontSize: "11px",
-                      fontWeight: 800,
-                      letterSpacing: "0.08em",
-                    }}
-                  >
-                    {item.cta}
-                  </span>
-                </a>
-              ))}
+            <div className="w-full flex justify-center">
+              <AdsterraNative />
             </div>
 
             <section
@@ -354,15 +268,7 @@ export default function OnboardingPanel({
 
   return (
     <div
-      className="onboarding-shell landing-shell"
-      style={{
-        flex: 1,
-        minHeight: 0,
-        padding: "18px",
-        display: "grid",
-        gridTemplateRows: "auto auto 1fr auto",
-        gap: "14px",
-      }}
+      className="onboarding-shell landing-shell flex-1 min-h-0 p-3 sm:p-4 md:p-[18px] grid grid-rows-[auto_auto_1fr_auto] gap-[14px]"
     >
       <div
         style={{
@@ -440,7 +346,7 @@ export default function OnboardingPanel({
         </div>
       )}
 
-      <div className="landing-main-grid" style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.1fr) minmax(0, 1fr)", gap: "14px", minHeight: 0 }}>
+      <div className="landing-main-grid grid grid-cols-1 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-[14px] min-h-0">
         <div style={{ display: "grid", gap: "14px", minHeight: 0 }}>
           <section
             style={{
@@ -495,6 +401,21 @@ export default function OnboardingPanel({
                   ▼
                 </span>
               </div>
+              
+              {selectedUniv === "NONE" && (
+                <input
+                  type="text"
+                  maxLength="30"
+                  value={customUniv}
+                  onChange={(e) => setCustomUniv(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleStart()}
+                  placeholder="Type your School/Univ (Optional)..."
+                  style={{
+                    ...fieldStyle,
+                    animation: "fadeSlideUp 0.2s ease-out"
+                  }}
+                />
+              )}
             </div>
           </section>
 
@@ -505,7 +426,7 @@ export default function OnboardingPanel({
                 Pick one
               </span>
             </div>
-            <div className="landing-vibe-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: "10px" }}>
+            <div className="landing-vibe-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-[10px]">
               {vibes.map((v) => {
                 const sel = selectedMood === v.id;
                 return (
@@ -627,6 +548,11 @@ export default function OnboardingPanel({
         </section>
       </div>
 
+      <div className="w-full my-4 flex flex-col items-center">
+        <span style={{ fontSize: "9px", fontWeight: 900, letterSpacing: "0.22em", textTransform: "uppercase", color: D.textMut, marginBottom: "4px" }}>Sponsored</span>
+        <Adsterra728x90 />
+      </div>
+
       <div style={{ display: "grid", gap: "12px" }}>
         <label
           style={{
@@ -655,11 +581,11 @@ export default function OnboardingPanel({
           </div>
           <p style={{ margin: 0, fontSize: "11px", lineHeight: 1.55, color: D.textMut }}>
             <span style={{ fontWeight: 900, color: isDark ? "#F472B6" : "#E11D48" }}>HEADS UP:</span> Bawal ang bastos at explicit na content. Basahin ang{" "}
-            <Link href="/terms" style={{ color: D.accent, fontWeight: 800, textDecoration: "underline", textUnderlineOffset: "2px" }}>
+            <Link href="/terms" target="_blank" rel="noopener noreferrer" style={{ color: D.accent, fontWeight: 800, textDecoration: "underline", textUnderlineOffset: "2px" }}>
               terms
             </Link>{" "}
             at{" "}
-            <Link href="/privacy" style={{ color: D.accent, fontWeight: 800, textDecoration: "underline", textUnderlineOffset: "2px" }}>
+            <Link href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: D.accent, fontWeight: 800, textDecoration: "underline", textUnderlineOffset: "2px" }}>
               privacy
             </Link>
             .
@@ -687,32 +613,7 @@ export default function OnboardingPanel({
         </button>
       </div>
 
-      <style>{`
-        @media (max-width: 960px) {
-          .landing-shell,
-          .intro-shell {
-            padding: 16px !important;
-          }
-
-          .intro-hero,
-          .landing-main-grid {
-            grid-template-columns: 1fr !important;
-          }
-        }
-
-        @media (max-width: 640px) {
-          .landing-shell,
-          .intro-shell {
-            padding: 12px !important;
-            gap: 12px !important;
-          }
-
-          .intro-highlight-grid,
-          .landing-vibe-grid {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
+      {/* Removed old inline <style> block as we are using Tailwind classes now */}
     </div>
   );
 }
