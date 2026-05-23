@@ -109,7 +109,7 @@ export default function Home() {
     const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
     return savedTheme === "light" ? "light" : "dark";
   });
-  const [status,      setStatus]      = useState("intro"); // Binago natin para Intro Page agad
+  const [status,      setStatus]      = useState("landing");
   const [connectionState, setConnectionState] = useState("connecting");
   const [serverNotice, setServerNotice] = useState("");
   const [nickname,    setNickname]    = useState("");
@@ -146,7 +146,7 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
 
   const isDark = theme === "dark";
-  const isOnboarding = status === "intro" || status === "landing";
+  const isOnboarding = status === "landing";
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -579,7 +579,7 @@ return (
         }}
       >
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        {(status === "intro" || status === "landing") && (
+        {status === "landing" && (
           <OnboardingPanel
             status={status}
             setStatus={setStatus}
