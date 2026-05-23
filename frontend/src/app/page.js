@@ -517,7 +517,7 @@ const handleReportStranger = async () => {
 
 return (
     <div
-      className="p-0 sm:p-2 h-[100dvh] w-[100vw] flex flex-col items-center justify-center relative overflow-hidden box-border"
+      className="pt-[60px] sm:pt-2 pb-0 px-0 sm:p-2 h-[100dvh] w-[100vw] flex flex-col items-center justify-center relative overflow-hidden box-border"
       style={{ background: D.pageBg, fontFamily: "'Figtree', sans-serif", transition: "background 0.2s" }}
     >
       {/* ── AURORA BACKGROUND BLOBS ── */}
@@ -909,38 +909,38 @@ return (
             <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }} ref={chatContainerRef}>
 
               {/* CHAT HEADER */}
-              <div style={{ padding: "12px 16px", borderBottom: `1px solid ${D.hdrBdr}`, background: D.hdrBg, backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <div style={{ width: "44px", height: "44px", borderRadius: "14px", background: D.panelBg, border: `1px solid ${D.panelBdr}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem", flexShrink: 0 }}>
+              <div style={{ padding: "12px 10px", borderBottom: `1px solid ${D.hdrBdr}`, background: D.hdrBg, backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }} className="sm:px-4">
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+                  <div style={{ width: "40px", height: "40px", borderRadius: "14px", background: D.panelBg, border: `1px solid ${D.panelBdr}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.4rem", flexShrink: 0 }} className="sm:w-[44px] sm:h-[44px] sm:text-[1.5rem]">
                     {strangerInfo?.mood?.split(" ")[0] || "👤"}
                   </div>
-                  <div>
+                  <div style={{ minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span style={{ fontWeight: 800, fontSize: "14px", color: D.textPri }}>{strangerInfo?.nickname || "Stranger"}</span>
-                      <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: strangerAfk ? "#F59E0B" : "#22C55E", animation: "pulse 1.4s infinite", display: "inline-block" }} />
+                      <span style={{ fontWeight: 800, fontSize: "13px", color: D.textPri }} className="truncate sm:text-[14px]">{strangerInfo?.nickname || "Stranger"}</span>
+                      <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: strangerAfk ? "#F59E0B" : "#22C55E", animation: "pulse 1.4s infinite", display: "inline-block", flexShrink: 0 }} />
                     </div>
-                    <div style={{ display: "flex", gap: "6px", marginTop: "3px", flexWrap: "wrap" }}>
-                      <span style={{ fontSize: "9px", fontWeight: 800, padding: "2px 7px", borderRadius: "6px", background: `${tier.c}15`, border: `1px solid ${tier.c}40`, color: tier.c }}>{tier.label}</span>
+                    <div style={{ display: "flex", gap: "4px", marginTop: "3px", flexWrap: "wrap" }}>
+                      <span style={{ fontSize: "9px", fontWeight: 800, padding: "2px 6px", borderRadius: "6px", background: `${tier.c}15`, border: `1px solid ${tier.c}40`, color: tier.c }} className="whitespace-nowrap">{tier.label}</span>
                       {strangerInfo?.univ && activeUniv && (
-                        <span style={{ fontSize: "9px", fontWeight: 800, padding: "2px 7px", borderRadius: "6px", background: `${activeUniv.color}15`, border: `1px solid ${activeUniv.color}40`, color: activeUniv.color }}>{strangerInfo.univ}</span>
+                        <span style={{ fontSize: "9px", fontWeight: 800, padding: "2px 6px", borderRadius: "6px", background: `${activeUniv.color}15`, border: `1px solid ${activeUniv.color}40`, color: activeUniv.color }} className="whitespace-nowrap">{strangerInfo.univ}</span>
                       )}
                     </div>
                   </div>
                 </div>
                 
                 {/* ACTION BUTTONS */}
-                <div className="flex gap-2 shrink-0">
-                  <button onClick={exitToMenu} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-bold text-white/80 transition-colors">
+                <div className="flex gap-1 sm:gap-2 shrink-0">
+                  <button onClick={exitToMenu} className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:gap-1.5 sm:px-3 sm:py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-bold text-white/80 transition-colors">
                     🚪 <span className="hidden sm:inline">Leave</span>
                   </button>
-                  <button onClick={exportChat} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-bold text-white/80 transition-colors">
+                  <button onClick={exportChat} className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:gap-1.5 sm:px-3 sm:py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-bold text-white/80 transition-colors">
                     📸 <span className="hidden sm:inline">Save</span>
                   </button>
-                  <button onClick={handleReportStranger} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-xs font-bold text-red-400 transition-colors">
+                  <button onClick={handleReportStranger} className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:gap-1.5 sm:px-3 sm:py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-xs font-bold text-red-400 transition-colors">
                     ⚠️ <span className="hidden sm:inline">Report</span>
                   </button>
-                  <button onClick={() => setShowSkipConfirm(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-pink-500/20 hover:bg-pink-500/40 text-xs font-bold text-pink-200 transition-colors">
-                    ⏭ Next
+                  <button onClick={() => setShowSkipConfirm(true)} className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:gap-1.5 sm:px-3 sm:py-2 rounded-lg bg-pink-500/20 hover:bg-pink-500/40 text-xs font-bold text-pink-200 transition-colors">
+                    ⏭ <span className="hidden sm:inline">Next</span>
                   </button>
                 </div>
               </div>
