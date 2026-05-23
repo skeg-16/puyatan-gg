@@ -30,6 +30,9 @@ export const metadata = {
     title: "Puyatan.GG",
     description: "Anonymous late-night chat for students and night owls in the Philippines.",
   },
+  verification: {
+    google: "nZ3_yT40ZaQ67yI2KBB6gew9n5HZepSRcWo-HuvD7og",
+  },
 };
 
 export default function RootLayout({ children }) {
