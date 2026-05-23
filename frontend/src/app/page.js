@@ -521,7 +521,7 @@ return (
       style={{ background: D.pageBg, fontFamily: "'Figtree', sans-serif", transition: "background 0.2s" }}
     >
       {/* ── AURORA BACKGROUND BLOBS ── */}
-      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0 }}>
+      <div className="hidden sm:block" style={{ position: "fixed", inset: 0, pointerEvents: "none", overflow: "hidden", zIndex: 0 }}>
         <div className="aurora-blob b1" style={{ background: D.blob1, willChange: "transform" }} />
         <div className="aurora-blob b2" style={{ background: D.blob2, willChange: "transform" }} />
         <div className="aurora-blob b3" style={{ background: D.blob3, willChange: "transform" }} />
@@ -546,7 +546,7 @@ return (
       {/* ── ONBOARDING AESTHETICS (BACKGROUND EMOJIS) ── */}
       {status === "landing" && (
         <>
-          <div className="absolute inset-0 pointer-events-none overflow-hidden z-[5]">
+          <div className="absolute inset-0 pointer-events-none overflow-hidden z-[5] hidden sm:block">
             {['🔥','👀','🥀','🎧','🎮','💔'].map((emoji, i) => (
               <div key={i} className="absolute text-4xl sm:text-5xl opacity-10 sm:opacity-20" style={{
                 left: `${15 + (i * 14)}%`,
@@ -930,12 +930,6 @@ return (
                 
                 {/* ACTION BUTTONS */}
                 <div className="flex gap-1 sm:gap-2 shrink-0">
-                  <button onClick={exitToMenu} className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:gap-1.5 sm:px-3 sm:py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-bold text-white/80 transition-colors">
-                    🚪 <span className="hidden sm:inline">Leave</span>
-                  </button>
-                  <button onClick={exportChat} className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:gap-1.5 sm:px-3 sm:py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-bold text-white/80 transition-colors">
-                    📸 <span className="hidden sm:inline">Save</span>
-                  </button>
                   <button onClick={handleReportStranger} className="flex items-center justify-center w-8 h-8 sm:w-auto sm:h-auto sm:gap-1.5 sm:px-3 sm:py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-xs font-bold text-red-400 transition-colors">
                     ⚠️ <span className="hidden sm:inline">Report</span>
                   </button>
@@ -1008,33 +1002,13 @@ return (
                       >{em}</button>
                     ))}
                   </div>
-                  {isSpoilerMode && (
-                    <span style={{ fontSize: "9px", fontWeight: 900, letterSpacing: "0.12em", textTransform: "uppercase", color: isDark ? "#F472B6" : "#BE185D", animation: "pulse 1.4s infinite" }}>🔒 SPOILER ON</span>
-                  )}
                 </div>
                 <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
-                  <button onClick={sendIcebreaker} title="Random Icebreaker"
-                    style={{ ...iconBtn, padding: "0 10px", height: "36px", fontSize: "12px", fontWeight: 700, gap: "6px", flexShrink: 0 }}
-                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
-                    <span style={{ fontSize: "16px" }}>🎲</span> <span className="hidden sm:inline">Icebreaker</span>
-                  </button>
-                  <button onClick={sendGameCard} title="Would You Rather"
-                    style={{ ...iconBtn, padding: "0 10px", height: "36px", fontSize: "12px", fontWeight: 700, gap: "6px", flexShrink: 0 }}
-                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
-                    <span style={{ fontSize: "16px" }}>🃏</span> <span className="hidden sm:inline">Game</span>
-                  </button>
                   <button onClick={() => setShowCanvas(!showCanvas)} title="Neon Scratchpad"
                     style={{ ...iconBtn, padding: "0 10px", height: "36px", fontSize: "12px", fontWeight: 700, gap: "6px", flexShrink: 0, background: showCanvas ? D.accent : D.iconBtnBg, color: showCanvas ? "#fff" : D.iconBtnClr }}
                     onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
                     <span style={{ fontSize: "16px" }}>🎨</span> <span className="hidden sm:inline">Draw</span>
                   </button>
-
-                  <button onClick={() => setIsSpoilerMode(!isSpoilerMode)} title="Spoiler Mode"
-                    style={{ ...iconBtn, padding: "0 10px", height: "36px", fontSize: "12px", fontWeight: 700, gap: "6px", flexShrink: 0, background: isSpoilerMode ? (isDark ? "rgba(244,114,182,0.15)" : "rgba(190,24,93,0.1)") : D.iconBtnBg, borderColor: isSpoilerMode ? (isDark ? "rgba(244,114,182,0.5)" : "rgba(190,24,93,0.4)") : D.iconBtnBdr, color: isSpoilerMode ? (isDark ? "#F472B6" : "#BE185D") : D.iconBtnClr }}
-                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"} onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}>
-                    <span style={{ fontSize: "16px" }}>🔒</span> <span className="hidden sm:inline">Spoiler</span>
-                  </button>
-
                   <input
                     type="text" placeholder="Yap na boss…" value={message}
                     onChange={handleTyping} onKeyDown={e => e.key === "Enter" && sendMessage()}
