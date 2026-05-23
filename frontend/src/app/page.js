@@ -543,16 +543,9 @@ return (
         <div key={e.id} style={{ position: "fixed", bottom: "130px", right: "60px", fontSize: "3rem", pointerEvents: "none", zIndex: 50, animation: "floatUp 2.2s ease-out forwards" }}>{e.emoji}</div>
       ))}
 
-      {/* ── ONBOARDING AESTHETICS (TICKER & BACKGROUND EMOJIS) ── */}
+      {/* ── ONBOARDING AESTHETICS (BACKGROUND EMOJIS) ── */}
       {status === "landing" && (
         <>
-          <div className="relative mt-[60px] mb-4 sm:mt-8 sm:mb-6 w-full flex justify-center z-[40] pointer-events-none px-4">
-            <div className="bg-pink-500/20 border border-pink-500/30 backdrop-blur-md px-4 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold text-pink-200 flex items-center gap-2 max-w-full text-center" style={{ boxShadow: "0 4px 20px rgba(236,72,153,0.15)" }}>
-              <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-pink-400 animate-pulse shrink-0"></span>
-              <span className="truncate">🔥 {stats.activeUsers * 3 + 1240} students are currently puyat!</span>
-            </div>
-          </div>
-          
           <div className="absolute inset-0 pointer-events-none overflow-hidden z-[5]">
             {['🔥','👀','🥀','🎧','🎮','💔'].map((emoji, i) => (
               <div key={i} className="absolute text-4xl sm:text-5xl opacity-10 sm:opacity-20" style={{
