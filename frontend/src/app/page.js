@@ -546,10 +546,10 @@ return (
       {/* ── ONBOARDING AESTHETICS (TICKER & BACKGROUND EMOJIS) ── */}
       {isOnboarding && (
         <>
-          <div className="absolute top-6 left-0 right-0 flex justify-center z-[40] pointer-events-none">
-            <div className="bg-pink-500/20 border border-pink-500/30 backdrop-blur-md px-5 py-2 rounded-full text-[11px] sm:text-xs font-bold text-pink-200 shadow-[0_0_15px_rgba(236,72,153,0.3)] flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-pink-400 animate-pulse"></span>
-              🔥 {stats.activeUsers * 3 + 1240} students are currently puyat!
+          <div className="absolute top-6 left-0 right-0 flex justify-center z-[40] pointer-events-none px-4">
+            <div className="bg-pink-500/20 border border-pink-500/30 backdrop-blur-md px-4 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold text-pink-200 shadow-[0_0_15px_rgba(236,72,153,0.3)] flex items-center gap-2 max-w-full text-center">
+              <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-pink-400 animate-pulse shrink-0"></span>
+              <span className="truncate">🔥 {stats.activeUsers * 3 + 1240} students are currently puyat!</span>
             </div>
           </div>
           

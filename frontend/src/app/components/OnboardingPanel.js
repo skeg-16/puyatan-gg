@@ -456,7 +456,7 @@ export default function OnboardingPanel({
           </section>
         </div>
 
-        <section style={{ ...panelBase, padding: "18px", display: "grid", gridTemplateRows: "auto 1fr auto", gap: "14px", minHeight: 0 }}>
+        <section style={{ ...panelBase, padding: "18px", display: "flex", flexDirection: "column", gap: "14px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <span style={labelStyle}>Interests</span>
@@ -548,9 +548,11 @@ export default function OnboardingPanel({
         </section>
       </div>
 
-      <div className="w-full my-4 flex flex-col items-center">
+      <div className="w-full my-4 flex flex-col items-center overflow-hidden">
         <span style={{ fontSize: "9px", fontWeight: 900, letterSpacing: "0.22em", textTransform: "uppercase", color: D.textMut, marginBottom: "4px" }}>Sponsored</span>
-        <Adsterra728x90 />
+        <div style={{ maxWidth: "100%", overflowX: "auto", display: "flex", justifyContent: "center", borderRadius: "8px" }} className="chat-scroll">
+          <Adsterra728x90 />
+        </div>
       </div>
 
       <div style={{ display: "grid", gap: "12px" }}>
