@@ -268,7 +268,7 @@ export default function OnboardingPanel({
 
   return (
     <div
-      className="onboarding-shell landing-shell flex-1 min-h-0 p-3 sm:p-4 md:p-[18px] grid grid-rows-[auto_auto_1fr_auto] gap-[14px]"
+      className="onboarding-shell landing-shell flex-1 min-h-0 p-3 sm:p-4 md:p-[18px] flex flex-col gap-[14px] overflow-y-auto chat-scroll"
     >
       <div
         style={{
